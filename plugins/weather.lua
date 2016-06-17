@@ -1,13 +1,14 @@
 do
 
 local BASE_URL = "http://api.openweathermap.org/data/2.5/weather"
+local API_KEY = ""
 
 local function get_weather(location)
   print("Finding weather in ", location)
   local url = BASE_URL
   url = url.."?q="..location
   url = url.."&units=metric"
-  url = url.."&appid=61cc78f1feb326ba7f3d3948ad690671"
+  url = url.."&appid="..API_KEY
   print(url)
 
   local b, c, h = http.request(url)
