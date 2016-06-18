@@ -88,6 +88,16 @@ install_rocks() {
     then echo "Error. Exiting."; exit $RET;
   fi
   
+  ./.luarocks/bin/luarocks install lunitx
+  RET=$?; if [ $RET -ne 0 ];
+    then echo "Error. Exiting."; exit $RET;
+  fi
+  
+  ./.luarocks/bin/luarocks install set
+  RET=$?; if [ $RET -ne 0 ];
+    then echo "Error. Exiting."; exit $RET;
+  fi
+  
   ./.luarocks/bin/luarocks install htmlparser
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
