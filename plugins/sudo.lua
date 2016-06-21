@@ -28,21 +28,34 @@ function run_bash(str)
 end
 
 function on_getting_dialogs(cb_extra,success,result)
+  local response = ""
+  local count_groups = 0
+  local count_supergroups = 0
+  local count_users = 0
   if success then
     local dialogs={}
-    for key,value in pairs(result) do 
-      for chatkey, chat in pairs(value.peer) do
-        print(chatkey,chat)
-        if chatkey=="id" then
-          table.insert(dialogs,chat.."\n")
-        end
-        if chatkey=="print_name" then
-          table.insert(dialogs,chat..": ")
-        end
-      end 
+	for i, v in pairs(result) do
+	  if v.peer.peer_type == "channel" then
+	    response = response..'\n'..str2emoji(":busts_in_silhouette:")..' '..string.gsub(v.peer.print_name, '_', ' ')..': '..v.peer.peer_id
+		count_supergroups = count_supergroups + 1
+	  end
+	  if v.peer.peer_type == "chat" then
+	    response = response..'\n'..str2emoji(":biohazard:")..' '..string.gsub(v.peer.print_name, '_', ' ')..': '..v.peer.peer_id
+		count_groups = count_groups + 1
+	  end
+	  if v.peer.peer_type == "user" then
+	    response = response..'\n'..str2emoji(":bust_in_silhouette:")..' '..string.gsub(v.peer.print_name, '_', ' ')..': '..v.peer.peer_id
+		count_users = count_users + 1
+	  end
     end
-
-    send_msg(cb_extra[1],table.concat(dialogs),ok_cb,false)
+	send_large_msg(cb_extra, response)
+	
+	response = "Stats for this session:\n"..str2emoji(":busts_in_silhouette:").." supergroups: "..count_supergroups
+	response = response.."\n"..str2emoji(":biohazard:").." groups: "..count_groups
+	response = response.."\n"..str2emoji(":bust_in_silhouette:").." users: "..count_users
+	response = response.."\n\n"..str2emoji(":heavy_plus_sign:").." total: "..count_supergroups+count_groups+count_users
+	
+	send_large_msg(cb_extra, response)
   end
 end
 
@@ -65,7 +78,7 @@ function run(msg, matches)
   end
 
   if matches[1]=="Get dialogs" then
-    get_dialog_list(on_getting_dialogs,{get_receiver(msg)})
+    get_dialog_list(on_getting_dialogs, get_receiver(msg))
     return
   end
 end
