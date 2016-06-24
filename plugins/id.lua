@@ -35,7 +35,7 @@ local function returnidschan(cb_extra, success, result)
    local chatname = cb_extra.print_name
 
    local text = str2emoji(":busts_in_silhouette:")..' IDs for chat '..chatname
-      ..' ('..chat_id..')\n'
+      ..' ('..string.gsub(chat_id, "channel#id", "")..')\n'
       ..'\n---------\n'
       i = 0
    for k,v in pairs(result) do
@@ -95,11 +95,13 @@ local function run(msg, matches)
 	    if is_mod(msg.from.id, group) then
 	      local chat = matches[2]
 		
-	      if not is_chan_msg(msg) then
-		    chat_info(chat, returnids, {receiver=receiver})
-		  else
-		    channel_get_users(chat, returnidschan, {peer_id=matches[2], print_name=string.gsub(user_print_name(msg.to), '_', ' '), receiver=receiver})
+	      if string.starts(chat, "chat#id") then
+		    return chat_info(chat, returnids, {receiver=receiver})
 		  end
+		  if string.starts(chat, "channel#id") then
+		    return channel_get_users(chat, returnidschan, {peer_id=matches[2], print_name="", receiver=receiver})
+		  end
+		  return str2emoji(":no_entry_sign:").." Invalid ID."
 		else
           return str2emoji(":no_entry_sign:").." You cannot lookup the IDs from that group."
 		end  
@@ -116,17 +118,9 @@ local function run(msg, matches)
 		end
       end
    else
---   	if not is_chat_msg(msg) then
---   		return "Only works in group"
---   	end
-   	local qusername = string.gsub(matches[1], "@", "")
-   	local chat = get_receiver(msg)
-	resolve_username(qusername, username_id, {receiver=receiver, qusername=qusername, is_chan=is_chan_msg(msg)})
---	if not is_chan_msg(msg) then
---   	  chat_info(chat, username_id, {receiver=receiver, qusername=qusername, is_chan=is_chan_msg(msg)})
---	else
---	  channel_get_users(chat, username_id, {receiver=receiver, qusername=qusername, is_chan=is_chan_msg(msg)})
---	end
+   	 local qusername = string.gsub(matches[1], "@", "")
+   	 local chat = get_receiver(msg)
+	 resolve_username(qusername, username_id, {receiver=receiver, qusername=qusername, is_chan=is_chan_msg(msg)})
    end
 end
 

@@ -169,6 +169,7 @@ return {
   patterns = {
     "^!help$",
     "^!help all",
+	"^/start$",
     "^!help (.+)"
   },
   run = run
