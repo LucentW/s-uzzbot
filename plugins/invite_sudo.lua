@@ -9,7 +9,7 @@ function invite_resolve(extra, success, result)
   if not extra.is_chan then
     chat_add_user(extra.receiver, 'user#id'..result.peer_id, ok_cb, false)
   else
-    channel_invite_user(extra.receiver, 'user#id'..result.peer_id, ok_cb, false)
+    channel_invite(extra.receiver, 'user#id'..result.peer_id, ok_cb, false)
   end
   send_large_msg(extra.receiver, "Add: "..result.peer_id.." to "..extra.receiver)
 end
