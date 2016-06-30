@@ -20,6 +20,7 @@ cd s-uzzbot
 ```
 
 To enable the API bot mode, before doing `./launch.sh install`, run `touch bot_mode`.
+
 Take in account that logging in with a bot token has some caveats: `delmsg` and `mute` do not work (API bots cannot delete messages), by reply commands such as `#promote` might misbehave, `!join` will not work (API bots can only be invited, they cannot join a group by themselves).
 
 Enable more [`plugins`](https://github.com/LucentW/s-uzzbot/tree/master/plugins)
@@ -47,7 +48,8 @@ $ sudo stop uzzbot # To stop it
 
 ------------
 Bots:
-[@Samus_Aran](https://telegram.me/Samus_Aran)
-[@Samus_Aran_bot](https://telegram.me/Samus_Aran_bot) (API version)
+
+- [@Samus_Aran](https://telegram.me/Samus_Aran)
+- [@Samus_Aran_bot](https://telegram.me/Samus_Aran_bot) (API version)
 
 [Join](https://telegram.me/joinchat/ASAvlj0ebrIkJ6JXmUG-YA) the support group for help.
