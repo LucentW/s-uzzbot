@@ -214,6 +214,39 @@ do
     return send_large_msg(receiver, 'Blocklist admin '..member_username..' has been demoted.')
   end
 
+  local function resolved_username(cb_extra, success, result)
+    local mod_cmd = cb_extra.mod_cmd
+    local receiver = cb_extra.receiver
+    local member = cb_extra.member
+    local text = 'User @'..member..' does not exist.'
+
+    local members
+    if not cb_extra.is_chan then
+      members = result.members
+    else
+      members = result
+    end
+
+    if success == 1 then
+      member_username = result.username
+      member_id = result.peer_id
+      if mod_cmd == 'promote' then
+        return promote(receiver, member_username, member_id)
+      elseif mod_cmd == 'demote' then
+        return demote(receiver, member_username, member_id)
+      elseif mod_cmd == 'adminprom' then
+        return admin_promote(receiver, member_username, member_id)
+      elseif mod_cmd == 'admindem' then
+        return admin_demote(receiver, member_username, member_id)
+      elseif mod_cmd == 'blocklistprom' then
+        return blocklistadm_promote(receiver, member_username, member_id)
+      elseif mod_cmd == 'blocklistdem' then
+        return blocklistadm_demote(receiver, member_username, member_id)
+      end
+    end
+    send_large_msg(receiver, text)
+  end
+
   local function username_id(cb_extra, success, result)
     local mod_cmd = cb_extra.mod_cmd
     local receiver = cb_extra.receiver
@@ -346,11 +379,12 @@ do
           return "You can't demote yourself"
         end
         local member = string.gsub(matches[2], "@", "")
-        if not is_chan_msg(msg) then
-          chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
-        else
-          channel_get_users(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
-        end
+        resolve_username(member, resolved_username, {mod_cmd=mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
+        -- if not is_chan_msg(msg) then
+        -- chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
+        --else
+        -- channel_get_users(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
+        --end
       end
     end
     if matches[1] == 'modlist' then
@@ -361,44 +395,48 @@ do
         return "Only sudo can promote user as admin"
       end
       local member = string.gsub(matches[2], "@", "")
-      if not is_chan_msg(msg) then
-        chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
-      else
-        channel_get_users(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
-      end
+      resolve_username(member, resolved_username, {mod_cmd=mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
+      --if not is_chan_msg(msg) then
+      -- chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
+      --else
+      -- channel_get_users(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
+      --end
     end
     if matches[1] == 'admindem' then
       if not is_sudo(msg) then
         return "Only sudo can promote user as admin"
       end
       local member = string.gsub(matches[2], "@", "")
-      if not is_chan_msg(msg) then
-        chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
-      else
-        channel_get_users(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
-      end
+      resolve_username(member, resolved_username, {mod_cmd=mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
+      --if not is_chan_msg(msg) then
+      -- chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
+      --else
+      -- channel_get_users(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
+      --end
     end
     if matches[1] == 'blocklistprom' then
       if not is_sudo(msg) then
         return "Only sudo can promote user as admin"
       end
       local member = string.gsub(matches[2], "@", "")
-      if not is_chan_msg(msg) then
-        chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
-      else
-        channel_get_users(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
-      end
+      resolve_username(member, resolved_username, {mod_cmd=mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
+      --if not is_chan_msg(msg) then
+      -- chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
+      --else
+      -- channel_get_users(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
+      --end
     end
     if matches[1] == 'blocklistdem' then
       if not is_sudo(msg) then
         return "Only sudo can promote user as admin"
       end
       local member = string.gsub(matches[2], "@", "")
-      if not is_chan_msg(msg) then
-        chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
-      else
-        channel_get_users(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
-      end
+      resolve_username(member, resolved_username, {mod_cmd=mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
+      --if not is_chan_msg(msg) then
+      -- chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
+      --else
+      -- channel_get_users(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
+      --end
     end
     if matches[1] == 'adminlist' then
       if not is_admin(msg) then
