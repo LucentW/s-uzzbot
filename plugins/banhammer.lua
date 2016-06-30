@@ -476,7 +476,13 @@ local function run(msg, matches)
   local receiver = get_receiver(msg)
 
   if matches[1] == 'kickme' then
-    chat_del_user('chat#id'..msg.to.id, 'user#id'..msg.from.id, ok_cb, true)
+    if is_chat_msg(msg) then
+      if is_chan_msg(msg) then
+        channel_kick('channel#id'..msg.to.id, 'user#id'..msg.from.id, ok_cb, true)
+      else
+        chat_del_user('chat#id'..msg.to.id, 'user#id'..msg.from.id, ok_cb, true)
+      end
+    end
   end
   -- if matches[1] == 'rr' then
   -- if math.random(6) == 6 then
