@@ -19,6 +19,8 @@ cd s-uzzbot
 ./launch.sh # Will ask you for a phone number & confirmation code or just your bot token.
 ```
 
+There are two more scripts to launch the bot: `launchd.sh` will run tg-cli over gdb, `launchf.sh` will take care of restarting the bot in case it crashes, deleting tg-cli's `state` file to prevent reparsing buggy/broken messages.
+
 To enable the API bot mode, before doing `./launch.sh install`, run `touch bot_mode`.
 
 Take in account that logging in with a bot token has some caveats: `delmsg` and `mute` do not work (API bots cannot delete messages), by reply commands such as `#promote` might misbehave, `!join` will not work (API bots can only be invited, they cannot join a group by themselves).

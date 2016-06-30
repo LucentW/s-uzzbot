@@ -67,7 +67,7 @@ install_rocks() {
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
   fi
-  
+
   ./.luarocks/bin/luarocks install serpent
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
@@ -78,13 +78,13 @@ install() {
   git pull
   git submodule update --init --recursive
   cd tg && ./configure && make
-  
+
   RET=$?; if [ $RET -ne 0 ]; then
     echo "Trying without Python...";
     ./configure --disable-python && make
     RET=$?
   fi
-  
+
   if [ $RET -ne 0 ]; then
     echo "Error. Exiting."; exit $RET;
   fi
@@ -110,5 +110,9 @@ else
     exit 1
   fi
 
-  gdb --args ./tg/bin/telegram-cli -k ./tg/tg-server.pub -s ./bot/bot.lua -l 1 -E
+  if [ ! -e "bot_mode" ]; then
+    gdb --args ./tg/bin/telegram-cli -k ./tg/tg-server.pub -s ./bot/bot.lua -l 1 -E
+  else
+    gdb --args ./tg/bin/telegram-cli -k ./tg/tg-server.pub -s ./bot/bot.lua -l 1 -E -b
+  fi
 fi
