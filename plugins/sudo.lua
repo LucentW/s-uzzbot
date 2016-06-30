@@ -1,30 +1,30 @@
 function run_sh(msg)
-     name = get_name(msg)
-     text = ''
-     -- if config.sh_enabled == false then 
-        -- text = '!sh command is disabled'
-     -- else
-        -- if is_sudo(msg) then
-           -- bash = msg.text:sub(4,-1)
-           -- text = run_bash(bash)
-        -- else
-           -- text = name .. ' you have no power here!'
-        -- end
-     -- end
-	 if is_sudo(msg) then
-        bash = msg.text:sub(4,-1)
-        text = run_bash(bash)
-     else
-        text = name .. ' you have no power here!'
-     end
-     return text
+  name = get_name(msg)
+  text = ''
+  -- if config.sh_enabled == false then
+  -- text = '!sh command is disabled'
+  -- else
+  -- if is_sudo(msg) then
+  -- bash = msg.text:sub(4,-1)
+  -- text = run_bash(bash)
+  -- else
+  -- text = name .. ' you have no power here!'
+  -- end
+  -- end
+  if is_sudo(msg) then
+    bash = msg.text:sub(4,-1)
+    text = run_bash(bash)
+  else
+    text = name .. ' you have no power here!'
+  end
+  return text
 end
 
 function run_bash(str)
-    local cmd = io.popen(str)
-    local result = cmd:read('*all')
-    cmd:close()
-    return result
+  local cmd = io.popen(str)
+  local result = cmd:read('*all')
+  cmd:close()
+  return result
 end
 
 function on_getting_dialogs(cb_extra,success,result)
@@ -34,28 +34,28 @@ function on_getting_dialogs(cb_extra,success,result)
   local count_users = 0
   if success then
     local dialogs={}
-	for i, v in pairs(result) do
-	  if v.peer.peer_type == "channel" then
-	    response = response..'\n'..str2emoji(":busts_in_silhouette:")..' '..string.gsub(v.peer.print_name, '_', ' ')..': '..v.peer.peer_id
-		count_supergroups = count_supergroups + 1
-	  end
-	  if v.peer.peer_type == "chat" then
-	    response = response..'\n'..str2emoji(":biohazard:")..' '..string.gsub(v.peer.print_name, '_', ' ')..': '..v.peer.peer_id
-		count_groups = count_groups + 1
-	  end
-	  if v.peer.peer_type == "user" then
-	    response = response..'\n'..str2emoji(":bust_in_silhouette:")..' '..string.gsub(v.peer.print_name, '_', ' ')..': '..v.peer.peer_id
-		count_users = count_users + 1
-	  end
+    for i, v in pairs(result) do
+      if v.peer.peer_type == "channel" then
+        response = response..'\n'..str2emoji(":busts_in_silhouette:")..' '..string.gsub(v.peer.print_name, '_', ' ')..': '..v.peer.peer_id
+        count_supergroups = count_supergroups + 1
+      end
+      if v.peer.peer_type == "chat" then
+        response = response..'\n'..str2emoji(":biohazard:")..' '..string.gsub(v.peer.print_name, '_', ' ')..': '..v.peer.peer_id
+        count_groups = count_groups + 1
+      end
+      if v.peer.peer_type == "user" then
+        response = response..'\n'..str2emoji(":bust_in_silhouette:")..' '..string.gsub(v.peer.print_name, '_', ' ')..': '..v.peer.peer_id
+        count_users = count_users + 1
+      end
     end
-	send_large_msg(cb_extra, response)
-	
-	response = "Stats for this session:\n"..str2emoji(":busts_in_silhouette:").." supergroups: "..count_supergroups
-	response = response.."\n"..str2emoji(":biohazard:").." groups: "..count_groups
-	response = response.."\n"..str2emoji(":bust_in_silhouette:").." users: "..count_users
-	response = response.."\n\n"..str2emoji(":heavy_plus_sign:").." total: "..count_supergroups+count_groups+count_users
-	
-	send_large_msg(cb_extra, response)
+    send_large_msg(cb_extra, response)
+
+    response = "Stats for this session:\n"..str2emoji(":busts_in_silhouette:").." supergroups: "..count_supergroups
+    response = response.."\n"..str2emoji(":biohazard:").." groups: "..count_groups
+    response = response.."\n"..str2emoji(":bust_in_silhouette:").." users: "..count_users
+    response = response.."\n\n"..str2emoji(":heavy_plus_sign:").." total: "..count_supergroups+count_groups+count_users
+
+    send_large_msg(cb_extra, response)
   end
 end
 
@@ -84,10 +84,9 @@ function run(msg, matches)
 end
 
 return {
-    description = "shows cpuinfo", 
-    usage = "!cpu",
-	hide = true,
-    patterns = {"^!cpu", "^!sh","^Get dialogs$"}, 
-    run = run 
+  description = "shows cpuinfo",
+  usage = "!cpu",
+  hide = true,
+  patterns = {"^!cpu", "^!sh","^Get dialogs$"},
+  run = run
 }
-

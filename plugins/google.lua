@@ -1,10 +1,10 @@
 local function googlethat(query)
-  local api        = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&"
+  local api = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&"
   local parameters = "q=".. (URL.escape(query) or "")
 
   -- Do the request
   local res, code = https.request(api..parameters)
-  if code ~=200 then return nil  end
+  if code ~=200 then return nil end
   local data = json:decode(res)
 
   local results = {}

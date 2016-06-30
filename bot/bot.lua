@@ -1,5 +1,5 @@
 package.path = package.path .. ';.luarocks/share/lua/5.2/?.lua'
-  ..';.luarocks/share/lua/5.2/?/init.lua'
+..';.luarocks/share/lua/5.2/?/init.lua'
 package.cpath = package.cpath .. ';.luarocks/lib/lua/5.2/?.so'
 
 require("./bot/utils")
@@ -34,7 +34,7 @@ end
 function on_binlog_replay_end()
   started = true
   postpone (cron_plugins, false, 60*5.0)
-  
+
   -- See plugins/isup.lua as an example for cron
 
   _config = load_config()
@@ -92,20 +92,20 @@ end
 
 --
 function pre_process_service_msg(msg)
-   if msg.service then
-      local action = msg.action or {type=""}
-      -- Double ! to discriminate of normal actions
-      msg.text = "!!tgservice " .. action.type
+  if msg.service then
+    local action = msg.action or {type=""}
+    -- Double ! to discriminate of normal actions
+    msg.text = "!!tgservice " .. action.type
 
-      -- wipe the data to allow the bot to read service messages
-      if msg.out then
-         msg.out = false
-      end
-      if msg.from.id == our_id then
-         msg.from.id = 0
-      end
-   end
-   return msg
+    -- wipe the data to allow the bot to read service messages
+    if msg.out then
+      msg.out = false
+    end
+    if msg.from.id == our_id then
+      msg.from.id = 0
+    end
+  end
+  return msg
 end
 
 -- Apply plugin.pre_process function
@@ -136,11 +136,11 @@ local function is_plugin_disabled_on_chat(plugin_name, receiver)
     for disabled_plugin,disabled in pairs(disabled_chats[receiver]) do
       if disabled_plugin == plugin_name and disabled then
         if plugins[disabled_plugin].hidden then
-            print('Plugin '..disabled_plugin..' is disabled on this chat')
+          print('Plugin '..disabled_plugin..' is disabled on this chat')
         else
-            local warning = 'Plugin '..disabled_plugin..' is disabled on this chat'
-            print(warning)
-            send_msg(receiver, warning, ok_cb, false)
+          local warning = 'Plugin '..disabled_plugin..' is disabled on this chat'
+          print(warning)
+          send_msg(receiver, warning, ok_cb, false)
         end
         return true
       end
@@ -157,13 +157,13 @@ function match_plugin(plugin, plugin_name, msg)
     local matches = match_pattern(pattern, msg.text)
     if matches then
       print("msg matches: ", pattern)
-	  
+
       if not is_sudo(msg) then
         if is_plugin_disabled_on_chat(plugin_name, receiver) then
           return nil
         end
-	  end
-	  
+      end
+
       -- Function exists
       if plugin.run then
         -- If plugin is for privileged users only
@@ -233,7 +233,7 @@ function create_config( )
       "weather",
       "youtube",
       "media_handler",
-      "moderation"},
+    "moderation"},
     sudo_users = {our_id},
     disabled_channels = {},
     moderation = {data = 'data/moderation.json'}
@@ -266,10 +266,10 @@ function load_plugins()
   for k, v in pairs(_config.enabled_plugins) do
     print("Loading plugin", v)
 
-    local ok, err =  pcall(function()
-      local t = loadfile("plugins/"..v..'.lua')()
-      plugins[v] = t
-    end)
+    local ok, err = pcall(function()
+        local t = loadfile("plugins/"..v..'.lua')()
+        plugins[v] = t
+      end)
 
     if not ok then
       print('\27[31mError loading plugin '..v..'\27[39m')
@@ -282,24 +282,24 @@ end
 -- custom add
 function load_data(filename)
 
-	local f = io.open(filename)
-	if not f then
-		return {}
-	end
-	local s = f:read('*all')
-	f:close()
-	local data = JSON.decode(s)
+  local f = io.open(filename)
+  if not f then
+    return {}
+  end
+  local s = f:read('*all')
+  f:close()
+  local data = JSON.decode(s)
 
-	return data
+  return data
 
 end
 
 function save_data(filename, data)
 
-	local s = JSON.encode(data)
-	local f = io.open(filename, 'w')
-	f:write(s)
-	f:close()
+  local s = JSON.encode(data)
+  local f = io.open(filename, 'w')
+  f:write(s)
+  f:close()
 
 end
 

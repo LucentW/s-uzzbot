@@ -1,6 +1,6 @@
 local usage = {
-   "!mine [ip]: Searches Minecraft server on specified ip and sends info. Default port: 25565",
-   "!mine [ip] [port]: Searches Minecraft server on specified ip and port and sends info.",
+  "!mine [ip]: Searches Minecraft server on specified ip and sends info. Default port: 25565",
+  "!mine [ip] [port]: Searches Minecraft server on specified ip and port and sends info.",
 }
 local ltn12 = require "ltn12"
 
@@ -9,7 +9,7 @@ local function mineSearch(ip, port, receiver) --25565
   local api = "https://api.syfaro.net/server/status"
   local parameters = "?ip="..(URL.escape(ip) or "").."&port="..(URL.escape(port) or "").."&players=true&favicon=true"
   local http = require("socket.http")
-  local respbody = {} 
+  local respbody = {}
   local body, code, headers, status = http.request{
     url = api..parameters,
     method = "GET",
@@ -31,13 +31,13 @@ local function mineSearch(ip, port, receiver) --25565
   end
   if (jsonData.players ~= nil) then
     if (jsonData.players.max ~= nil) then
-      responseText = responseText.."  Max Players: "..jsonData.players.max.."\n"
+      responseText = responseText.." Max Players: "..jsonData.players.max.."\n"
     end
     if (jsonData.players.now ~= nil) then
-      responseText = responseText.."  Players online: "..jsonData.players.now.."\n"
+      responseText = responseText.." Players online: "..jsonData.players.now.."\n"
     end
     if (jsonData.players.sample ~= nil and jsonData.players.sample ~= false) then
-      responseText = responseText.."  Players: "..table.concat(jsonData.players.sample, ", ").."\n"
+      responseText = responseText.." Players: "..table.concat(jsonData.players.sample, ", ").."\n"
     end
   end
   if (jsonData.favicon ~= nil and false) then
@@ -61,11 +61,10 @@ local function parseText(chat, text)
   return "ERROR: no input ip?"
 end
 
-
 local function run(msg, matches)
   local chat_id = tostring(msg.to.id)
-	local result = parseText(chat_id, msg.text)
-	return result
+  local result = parseText(chat_id, msg.text)
+  return result
 end
 
 return {

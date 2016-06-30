@@ -16,7 +16,7 @@ do
   local function getLyrics(q)
     local b, c = http.request(BASE_URL .. URL.escape(q))
     if c ~= 200 then
-     return "Oops! Network errors! Try again later."
+      return "Oops! Network errors! Try again later."
     end
 
     local root = htmlparser.parse(b)
@@ -25,48 +25,47 @@ do
 
     -- If no tracks found
     if #tracks < 1 then
-        return 'No tracks found :( Try with other keywords may help.'
+      return 'No tracks found :( Try with other keywords may help.'
     end
 
     for i, track in pairs(tracks) do
 
-        -- Track id
-        local trackId = track.id
+      -- Track id
+      local trackId = track.id
 
-	-- Remove that starting 't' in the id of element
-        trackId = trackId:sub(2)
+      -- Remove that starting 't' in the id of element
+      trackId = trackId:sub(2)
 
-        -- Parse track
-        track = track:getcontent()
-        track = htmlparser.parse(track)
+      -- Parse track
+      track = track:getcontent()
+      track = htmlparser.parse(track)
 
-        -- Track artist
-        local artist = track:select('.artist')[1]
-        artist = unescape_html(artist:getcontent())
+      -- Track artist
+      local artist = track:select('.artist')[1]
+      artist = unescape_html(artist:getcontent())
 
-        -- Track title 
-        local title = track:select('.title')[1]
-        title = unescape_html(title:getcontent())
+      -- Track title
+      local title = track:select('.title')[1]
+      title = unescape_html(title:getcontent())
 
-        -- Track time
-        local time = track:select('.time')[1]
-        time = time:getcontent()
-        time = time:sub(-5)
+      -- Track time
+      local time = track:select('.time')[1]
+      time = time:getcontent()
+      time = time:sub(-5)
 
-        -- Track specs
-        local specs = track:select('.specs')[1]
-        specs = specs:getcontent()
-        specs = specs:split(',')
-	-- Size
-        local size = specs[1]:trim()
-	-- Bitrate
-        local bitrate = specs[2]:trim()
+      -- Track specs
+      local specs = track:select('.specs')[1]
+      specs = specs:getcontent()
+      specs = specs:split(',')
+      -- Size
+      local size = specs[1]:trim()
+      -- Bitrate
+      local bitrate = specs[2]:trim()
 
-
-	-- Generate an awesome, well formated output
-        output = output .. i .. '. ' .. artist .. ' - ' .. title .. '\n'
-        .. '🕚 ' .. time .. ' | ' .. ' 🎧 ' .. bitrate .. ' | ' .. ' 📎  ' .. size .. '\n'
-        .. '💾 : ' .. getDownloadLink(trackId) .. '\n\n'
+      -- Generate an awesome, well formated output
+      output = output .. i .. '. ' .. artist .. ' - ' .. title .. '\n'
+      .. '🕚 ' .. time .. ' | ' .. ' 🎧 ' .. bitrate .. ' | ' .. ' 📎 ' .. size .. '\n'
+      .. '💾 : ' .. getDownloadLink(trackId) .. '\n\n'
     end
 
     return output
@@ -80,9 +79,9 @@ do
     description = 'Search and get music from pleer',
     usage = '!music [track name or artist and track name]: Search and get the music',
     patterns = {
-    '^!music (.*)$'
+      '^!music (.*)$'
     },
     run = run
-}
+  }
 
 end
