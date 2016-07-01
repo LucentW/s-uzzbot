@@ -98,9 +98,10 @@ function Wikipedia:wikintro(text, lang)
     end
 
     local page = query.pages[next(query.pages)]
+    local realLang = lang or 'en'
 
     if page and page.extract then
-      return text..": "..page.extract
+      return text..": "..page.extract..' http://'..realLang..'.wikipedia.org/wiki/'..string.gsub(page.title, ' ', '_')
     else
       local text = "Extract not found for "..text
       text = text..'\n'..table.concat(wikiusage, '\n')
@@ -158,7 +159,6 @@ local function run(msg, matches)
   if search then
     result = Wikipedia:wikisearch(term, lang)
   else
-    -- TODO: Show the link
     result = Wikipedia:wikintro(term, lang)
   end
   return result

@@ -358,11 +358,12 @@ do
 
       if matches[2] then
         local member = string.gsub(matches[2], "@", "")
-        if not is_chan_msg(msg) then
-          chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
-        else
-          channel_get_users(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
-        end
+        resolve_username(member, resolved_username, {mod_cmd=mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
+        --if not is_chan_msg(msg) then
+        --  chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
+        --else
+        --  channel_get_users(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
+        --end
       end
     end
     if matches[1] == 'demote' then -- and matches[2] then
@@ -379,7 +380,7 @@ do
           return "You can't demote yourself"
         end
         local member = string.gsub(matches[2], "@", "")
-        resolve_username(member, resolved_username, {mod_cmd=mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
+        resolve_username(member, resolved_username, {mod_cmd=mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
         -- if not is_chan_msg(msg) then
         -- chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
         --else
@@ -395,7 +396,7 @@ do
         return "Only sudo can promote user as admin"
       end
       local member = string.gsub(matches[2], "@", "")
-      resolve_username(member, resolved_username, {mod_cmd=mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
+      resolve_username(member, resolved_username, {mod_cmd=mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
       --if not is_chan_msg(msg) then
       -- chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
       --else
@@ -407,7 +408,7 @@ do
         return "Only sudo can promote user as admin"
       end
       local member = string.gsub(matches[2], "@", "")
-      resolve_username(member, resolved_username, {mod_cmd=mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
+      resolve_username(member, resolved_username, {mod_cmd=mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
       --if not is_chan_msg(msg) then
       -- chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
       --else
@@ -419,7 +420,7 @@ do
         return "Only sudo can promote user as admin"
       end
       local member = string.gsub(matches[2], "@", "")
-      resolve_username(member, resolved_username, {mod_cmd=mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
+      resolve_username(member, resolved_username, {mod_cmd=mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
       --if not is_chan_msg(msg) then
       -- chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
       --else
@@ -431,7 +432,7 @@ do
         return "Only sudo can promote user as admin"
       end
       local member = string.gsub(matches[2], "@", "")
-      resolve_username(member, resolved_username, {mod_cmd=mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
+      resolve_username(member, resolved_username, {mod_cmd=mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
       --if not is_chan_msg(msg) then
       -- chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
       --else
