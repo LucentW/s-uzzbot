@@ -1,61 +1,38 @@
-do
-
-local BASE_URL = "http://api.openweathermap.org/data/2.5/weather"
-local API_KEY = ""
-
-local function get_weather(location)
-  print("Finding weather in ", location)
-  local url = BASE_URL
-  url = url.."?q="..string.gsub(location, " ", "+")
-  url = url.."&units=metric"
-  url = url.."&appid="..API_KEY
-
-  local b, c, h = http.request(url)
-  if c ~= 200 then return nil end
-
-  local weather = json:decode(b)
-  local city = weather.name
-  local country = weather.sys.country
-  local temp = 'The temperature in '..city
-    ..' (' ..country..')'
-    ..' is '..weather.main.temp..'°C'
-  local conditions = 'Current conditions are: '
-    .. weather.weather[1].description
-  
-  if weather.weather[1].main == 'Clear' then
-    conditions = conditions .. ' ☀'
-  elseif weather.weather[1].main == 'Clouds' then
-    conditions = conditions .. ' ☁☁'
-  elseif weather.weather[1].main == 'Rain' then
-    conditions = conditions .. ' ☔'
-  elseif weather.weather[1].main == 'Thunderstorm' then
-    conditions = conditions .. ' ☔☔☔☔'
-  end
-
-  return temp .. '\n' .. conditions
-end
-
 local function run(msg, matches)
-  local city = 'Venezia'
-
-  if matches[1] ~= '!weather' then 
-    city = matches[1]
-  end
-  local text = get_weather(city)
-  if not text then
-    text = 'Can\'t get weather from that city.'
-  end
-  return text
+	local url = "https://query.yahooapis.com/v1/public/yql?q=select%20item.condition%20from%20weather.forecast%20where%20woeid%20in%20%28select%20woeid%20from%20geo.places%281%29%20where%20text%3D%22"..string.gsub(matches[1], " ", "%%20").."%22%29&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys"
+	
+	local res = http.request(url)
+	  
+	local jtab = JSON.decode(res)
+	if jtab.query.count == 1 then
+		data = jtab.query.results.channel.item.condition
+		celsius = string.format("%.0f", (data.temp - 32) * 5/9)
+		conditions = 'Current conditions are: '..data.text
+		
+		if string.match(data.text, 'Sunny') or string.match(data.text, 'Clear') then
+          conditions = conditions .. ' ☀'
+        elseif string.match(data.text, 'Cloudy') then
+          conditions = conditions .. ' ☁☁'
+        elseif string.match(data.text, 'Rain') then
+          conditions = conditions .. ' ☔'
+        elseif data.text == 'Thunderstorm' then
+          conditions = conditions .. ' ☔☔☔☔'
+        end
+		
+		return "The temperature in "..matches[1].." "
+			.."is "..celsius.." °C/"
+			..data.temp.." °F\n"..conditions
+			
+	else
+		return 'Can\'t get weather from that city.'
+	end
 end
 
 return {
-  description = "weather in that city (Venezia is default)", 
+  description = "weather in that city", 
   usage = "!weather (city)",
   patterns = {
-    "^!weather$",
     "^!weather (.*)$"
   }, 
   run = run 
 }
-
-end
