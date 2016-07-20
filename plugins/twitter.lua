@@ -8,13 +8,13 @@ local twitter_config = load_from_file('data/twitter.lua', {
   })
 
 local client = OAuth.new(twitter_config.consumer_key, twitter_config.consumer_secret, {
-    RequestToken = "https://api.twitter.com/oauth/request_token", 
+    RequestToken = "https://api.twitter.com/oauth/request_token",
     AuthorizeUser = {"https://api.twitter.com/oauth/authorize", method = "GET"},
     AccessToken = "https://api.twitter.com/oauth/twitter_config.access_token"
-}, {
+    }, {
     OAuthToken = twitter_config.access_token,
     OAuthTokenSecret = twitter_config.access_token_secret
-})
+  })
 
 function run(msg, matches)
 
@@ -37,16 +37,16 @@ function run(msg, matches)
 
   local header = "Tweet from " .. response.user.name .. " (@" .. response.user.screen_name .. ")\n"
   local text = response.text
-  
+
   -- replace short URLs
   if response.entities.url then
-    for k, v in pairs(response.entities.urls) do 
+    for k, v in pairs(response.entities.urls) do
       local short = v.url
       local long = v.expanded_url
       text = text:gsub(short, long)
     end
   end
-  
+
   -- remove images
   local images = {}
   if response.extended_entities and response.extended_entities.media then
@@ -58,19 +58,18 @@ function run(msg, matches)
     end
   end
 
-  -- send the parts 
+  -- send the parts
   local receiver = get_receiver(msg)
   send_msg(receiver, header .. "\n" .. text, ok_cb, false)
   send_photos_from_url(receiver, images)
   return nil
 end
- 
 
 return {
-  description = "When user sends twitter URL, send text and images to origin. Requires OAuth Key.", 
+  description = "When user sends twitter URL, send text and images to origin. Requires OAuth Key.",
   usage = "",
   patterns = {
     "https://twitter.com/[^/]+/status/([0-9]+)"
-  }, 
-  run = run 
+  },
+  run = run
 }

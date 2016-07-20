@@ -48,12 +48,12 @@ function is_chan_msg( msg )
 end
 
 function string.random(length)
-   local str = "";
-   for i = 1, length do
-      math.random(97, 122)
-      str = str..string.char(math.random(97, 122));
-   end
-   return str;
+  local str = "";
+  for i = 1, length do
+    math.random(97, 122)
+    str = str..string.char(math.random(97, 122));
+  end
+  return str;
 end
 
 function string:split(sep)
@@ -101,7 +101,7 @@ function get_http_file_name(url, headers)
   return file_name
 end
 
---  Saves file to /tmp/. If file_name isn't provided,
+-- Saves file to /tmp/. If file_name isn't provided,
 -- will get the text after the last "/" for filename
 -- and content-type for extension
 function download_to_file(url, file_name)
@@ -189,7 +189,7 @@ function is_admin(msg)
   end
   for v,user in pairs(_config.sudo_users) do
     if user == msg.from.id then
-        var = true
+      var = true
     end
   end
   return var
@@ -208,7 +208,7 @@ function is_blocklistadm(msg)
   end
   for v,user in pairs(_config.sudo_users) do
     if user == msg.from.id then
-        var = true
+      var = true
     end
   end
   return var
@@ -233,7 +233,7 @@ function is_momod(msg)
   end
   for v,user in pairs(_config.sudo_users) do
     if user == msg.from.id then
-        var = true
+      var = true
     end
   end
   return var
@@ -258,7 +258,7 @@ function is_mod(user_id, chat_id)
   end
   for v,user in pairs(_config.sudo_users) do
     if user == user_id then
-        var = true
+      var = true
     end
   end
   if user == our_id then
@@ -382,7 +382,7 @@ function send_photo_from_url_callback(cb_extra, success, result)
   end
 end
 
---  Send multiple images asynchronous.
+-- Send multiple images asynchronous.
 -- param urls must be a table.
 function send_photos_from_url(receiver, urls)
   local cb_extra = {
@@ -509,54 +509,53 @@ function user_allowed(plugin, msg)
   return true
 end
 
-
 function send_order_msg(destination, msgs)
-   local cb_extra = {
-      destination = destination,
-      msgs = msgs
-   }
-   send_order_msg_callback(cb_extra, true)
+  local cb_extra = {
+    destination = destination,
+    msgs = msgs
+  }
+  send_order_msg_callback(cb_extra, true)
 end
 
 function send_order_msg_callback(cb_extra, success, result)
-   local destination = cb_extra.destination
-   local msgs = cb_extra.msgs
-   local file_path = cb_extra.file_path
-   if file_path ~= nil then
-      os.remove(file_path)
-      print("Deleted: " .. file_path)
-   end
-   if type(msgs) == 'string' then
-      send_large_msg(destination, msgs)
-   elseif type(msgs) ~= 'table' then
-      return
-   end
-   if #msgs < 1 then
-      return
-   end
-   local msg = table.remove(msgs, 1)
-   local new_cb_extra = {
-      destination = destination,
-      msgs = msgs
-   }
-   if type(msg) == 'string' then
-      send_msg(destination, msg, send_order_msg_callback, new_cb_extra)
-   elseif type(msg) == 'table' then
-      local typ = msg[1]
-      local nmsg = msg[2]
-      new_cb_extra.file_path = nmsg
-      if typ == 'document' then
-         send_document(destination, nmsg, send_order_msg_callback, new_cb_extra)
-      elseif typ == 'image' or typ == 'photo' then
-         send_photo(destination, nmsg, send_order_msg_callback, new_cb_extra)
-      elseif typ == 'audio' then
-         send_audio(destination, nmsg, send_order_msg_callback, new_cb_extra)
-      elseif typ == 'video' then
-         send_video(destination, nmsg, send_order_msg_callback, new_cb_extra)
-      else
-         send_file(destination, nmsg, send_order_msg_callback, new_cb_extra)
-      end
-   end
+  local destination = cb_extra.destination
+  local msgs = cb_extra.msgs
+  local file_path = cb_extra.file_path
+  if file_path ~= nil then
+    os.remove(file_path)
+    print("Deleted: " .. file_path)
+  end
+  if type(msgs) == 'string' then
+    send_large_msg(destination, msgs)
+  elseif type(msgs) ~= 'table' then
+    return
+  end
+  if #msgs < 1 then
+    return
+  end
+  local msg = table.remove(msgs, 1)
+  local new_cb_extra = {
+    destination = destination,
+    msgs = msgs
+  }
+  if type(msg) == 'string' then
+    send_msg(destination, msg, send_order_msg_callback, new_cb_extra)
+  elseif type(msg) == 'table' then
+    local typ = msg[1]
+    local nmsg = msg[2]
+    new_cb_extra.file_path = nmsg
+    if typ == 'document' then
+      send_document(destination, nmsg, send_order_msg_callback, new_cb_extra)
+    elseif typ == 'image' or typ == 'photo' then
+      send_photo(destination, nmsg, send_order_msg_callback, new_cb_extra)
+    elseif typ == 'audio' then
+      send_audio(destination, nmsg, send_order_msg_callback, new_cb_extra)
+    elseif typ == 'video' then
+      send_video(destination, nmsg, send_order_msg_callback, new_cb_extra)
+    else
+      send_file(destination, nmsg, send_order_msg_callback, new_cb_extra)
+    end
+  end
 end
 
 -- Same as send_large_msg_callback but friendly params
@@ -601,7 +600,7 @@ function send_large_msg_callback(cb_extra, success, result)
       destination = destination,
       text = rest
     }
-    
+
     send_msg(destination, my_text, send_large_msg_callback, cb_extra)
   end
 end
@@ -615,9 +614,9 @@ function match_pattern(pattern, text, lower_case)
     else
       matches = { string.match(text, pattern) }
     end
-      if next(matches) then
-        return matches
-      end
+    if next(matches) then
+      return matches
+    end
   end
   -- nil
 end
@@ -633,26 +632,26 @@ function load_from_file(file, default_data)
     print ('Created file', file)
   else
     print ('Data loaded from file', file)
-    f:close() 
+    f:close()
   end
   return loadfile (file)()
 end
 
 -- See http://stackoverflow.com/a/14899740
 function unescape_html(str)
-  local map = { 
-    ["lt"]  = "<", 
-    ["gt"]  = ">",
+  local map = {
+    ["lt"] = "<",
+    ["gt"] = ">",
     ["amp"] = "&",
     ["quot"] = '"',
-    ["apos"] = "'" 
+    ["apos"] = "'"
   }
   new = string.gsub(str, '(&(#?x?)([%d%a]+);)', function(orig, n, s)
-    var = map[s] or n == "#" and string.char(s)
-    var = var or n == "#x" and string.char(tonumber(s,16))
-    var = var or orig
-    return var
-  end)
+      var = map[s] or n == "#" and string.char(s)
+      var = var or n == "#x" and string.char(tonumber(s,16))
+      var = var or orig
+      return var
+    end)
   return new
 end
 

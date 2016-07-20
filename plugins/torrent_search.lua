@@ -10,11 +10,11 @@ local function search_kickass(query)
     local link = torrent.torrentLink
     link = link:gsub('%?title=.+','')
     text = text..torrent.title
-      ..'\n'..'Seeds: '..torrent.seeds
-      ..' '..'Leeches: '..torrent.leechs
-      ..'\n'..link
-      --..'\n magnet:?xt=urn:btih:'..torrent.hash
-      ..'\n\n'
+    ..'\n'..'Seeds: '..torrent.seeds
+    ..' '..'Leeches: '..torrent.leechs
+    ..'\n'..link
+    --..'\n magnet:?xt=urn:btih:'..torrent.hash
+    ..'\n\n'
   end
   return text
 end

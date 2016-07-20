@@ -7,12 +7,12 @@ local function mathjs(exp)
   local text = nil
   if c == 200 then
     text = 'Result: '..b
-  
+
   elseif c == 400 then
     text = b
   else
     text = 'Unexpected error\n'
-      ..'Is api.mathjs.org up?'
+    ..'Is api.mathjs.org up?'
   end
   return text
 end

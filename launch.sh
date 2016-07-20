@@ -71,8 +71,8 @@ install_rocks() {
   ./.luarocks/bin/luarocks install luaexpat
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
-  fi  
-  
+  fi
+
   ./.luarocks/bin/luarocks install xml
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
@@ -82,22 +82,22 @@ install_rocks() {
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
   fi
-  
+
   ./.luarocks/bin/luarocks install serpent
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
   fi
-  
+
   ./.luarocks/bin/luarocks install lunitx
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
   fi
-  
+
   ./.luarocks/bin/luarocks install set
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
   fi
-  
+
   ./.luarocks/bin/luarocks install htmlparser
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
@@ -108,13 +108,13 @@ install() {
   git pull
   git submodule update --init --recursive
   cd tg && ./configure && make
-  
+
   RET=$?; if [ $RET -ne 0 ]; then
     echo "Trying without Python...";
     ./configure --disable-python && make
     RET=$?
   fi
-  
+
   if [ $RET -ne 0 ]; then
     echo "Error. Exiting."; exit $RET;
   fi
@@ -140,5 +140,9 @@ else
     exit 1
   fi
 
-  ./tg/bin/telegram-cli -k ./tg/tg-server.pub -s ./bot/bot.lua -l 1 -E
+  if [ ! -e "bot_mode" ]; then
+    ./tg/bin/telegram-cli -k ./tg/tg-server.pub -s ./bot/bot.lua -l 1 -E
+  else
+    ./tg/bin/telegram-cli -k ./tg/tg-server.pub -s ./bot/bot.lua -l 1 -E -b
+  fi
 fi

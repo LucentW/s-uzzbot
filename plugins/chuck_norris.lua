@@ -11,10 +11,10 @@ local function run(msg)
 end
 
 return {
-  description = "Get random Chuck Norris jokes.", 
+  description = "Get random Chuck Norris jokes.",
   usage = "!chuck",
   patterns = {
     "^!chuck$"
-  }, 
+  },
   run = run
 }

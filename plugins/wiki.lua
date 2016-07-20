@@ -24,9 +24,9 @@ local Wikipedia = {
   },
   wiki_search_params = {
     action = "query",
-	 list = "search",
+    list = "search",
     srlimit = 20,
-	 format = "json",
+    format = "json",
   },
   default_lang = "en",
 }
@@ -36,7 +36,7 @@ function Wikipedia:getWikiServer(lang)
 end
 
 --[[
---  return decoded JSON table from Wikipedia
+-- return decoded JSON table from Wikipedia
 --]]
 function Wikipedia:loadPage(text, lang, intro, plain, is_search)
   local request, sink = {}, {}
@@ -65,7 +65,7 @@ function Wikipedia:loadPage(text, lang, intro, plain, is_search)
   print(request['url'])
   request['method'] = 'GET'
   request['sink'] = ltn12.sink.table(sink)
-  
+
   local httpRequest = parsed.scheme == 'http' and http.request or https.request
   local code, headers, status = socket.skip(1, httpRequest(request))
 
@@ -81,7 +81,7 @@ function Wikipedia:loadPage(text, lang, intro, plain, is_search)
     else
       return nil
     end
-  else 
+  else
     return nil
   end
 end
@@ -98,9 +98,10 @@ function Wikipedia:wikintro(text, lang)
     end
 
     local page = query.pages[next(query.pages)]
+    local realLang = lang or 'en'
 
     if page and page.extract then
-      return text..": "..page.extract
+      return text..": "..page.extract..' http://'..realLang..'.wikipedia.org/wiki/'..string.gsub(page.title, ' ', '_')
     else
       local text = "Extract not found for "..text
       text = text..'\n'..table.concat(wikiusage, '\n')
@@ -117,11 +118,11 @@ function Wikipedia:wikisearch(text, lang)
 
   if result and result.query then
     local titles = ""
-	 for i,item in pairs(result.query.search) do
+    for i,item in pairs(result.query.search) do
       titles = titles .. "\n" .. item["title"]
-	 end
-	 titles = titles ~= "" and titles or "No results found"
-	 return titles
+    end
+    titles = titles ~= "" and titles or "No results found"
+    return titles
   else
     return "Sorry, an error occurred"
   end
@@ -134,15 +135,15 @@ local function run(msg, matches)
   local search, term, lang
   if matches[1] == "search" then
     search = true
-	 term = matches[2]
-	 lang = nil
+    term = matches[2]
+    lang = nil
   elseif matches[2] == "search" then
     search = true
-	 term = matches[3]
-	 lang = matches[1]
+    term = matches[3]
+    lang = matches[1]
   else
     term = matches[2]
-	 lang = matches[1]
+    lang = matches[1]
   end
   if not term then
     term = lang
@@ -158,7 +159,6 @@ local function run(msg, matches)
   if search then
     result = Wikipedia:wikisearch(term, lang)
   else
-    -- TODO: Show the link
     result = Wikipedia:wikintro(term, lang)
   end
   return result

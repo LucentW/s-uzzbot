@@ -28,8 +28,8 @@ end
 local function qr(receiver, text, color, bgcolor)
 
   local url = "http://api.qrserver.com/v1/create-qr-code/?"
-    .."size=600x600"  --fixed size otherways it's low detailed
-    .."&data="..URL.escape(text:trim())
+  .."size=600x600" --fixed size otherways it's low detailed
+  .."&data="..URL.escape(text:trim())
 
   if color then
     url = url.."&color="..get_hex(color)
@@ -45,8 +45,8 @@ local function qr(receiver, text, color, bgcolor)
   end
 
   if #response > 0 then
-	  send_photo_from_url(receiver, url)
-	return
+    send_photo_from_url(receiver, url)
+    return
 
   end
   return "Oops! Something strange happened :("
@@ -73,9 +73,9 @@ return {
   usage = {
     "!qr [text]",
     '!qr "[background color]" "[data color]" [text]\n'
-      .."Color through text: red|green|blue|purple|black|white|gray\n"
-      .."Colors through hex notation: (\"a56729\" is brown)\n"
-      .."Or colors through decimals: (\"255-192-203\" is pink)"
+    .."Color through text: red|green|blue|purple|black|white|gray\n"
+    .."Colors through hex notation: (\"a56729\" is brown)\n"
+    .."Or colors through decimals: (\"255-192-203\" is pink)"
   },
   patterns = {
     '^!qr "(%w+)" "(%w+)" (.+)$',

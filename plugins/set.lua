@@ -2,7 +2,7 @@ local function save_value(msg, name, value)
   if (not name or not value) then
     return "Usage: !set var_name value"
   end
-  
+
   local hash = nil
   if msg.to.type == 'chat' then
     hash = 'chat:'..msg.to.id..':variables'
@@ -25,11 +25,10 @@ local function run(msg, matches)
 end
 
 return {
-  description = "Plugin for saving values. get.lua plugin is necessary to retrieve them.", 
+  description = "Plugin for saving values. get.lua plugin is necessary to retrieve them.",
   usage = "!set [value_name] [data]: Saves the data with the value_name name.",
   patterns = {
-   "!set ([^%s]+) (.+)$"
-  }, 
-  run = run 
+    "!set ([^%s]+) (.+)$"
+  },
+  run = run
 }
-

@@ -5,11 +5,11 @@ local function get_variables_hash(msg)
   if msg.to.type == 'user' then
     return 'user:'..msg.from.id..':variables'
   end
-end 
+end
 
 local function list_variables(msg)
   local hash = get_variables_hash(msg)
-  
+
   if hash then
     local names = redis:hkeys(hash)
     local text = ''
@@ -41,7 +41,7 @@ local function run(msg, matches)
 end
 
 return {
-  description = "Retrieves variables saved with !set", 
+  description = "Retrieves variables saved with !set",
   usage = "!get (value_name): Returns the value_name value.",
   patterns = {
     "^(!get) (.+)$",
