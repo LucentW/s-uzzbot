@@ -40,7 +40,11 @@ local function returnidschan(cb_extra, success, result)
   i = 0
   for k,v in pairs(result) do
     i = i+1
-    text = text .. i .. ". " .. string.gsub(v.print_name, "_", " ") .. " (" .. v.peer_id .. ")\n"
+    if v.print_name ~= nil then
+      text = text .. i .. ". " .. string.gsub(v.print_name, "_", " ") .. " (" .. v.peer_id .. ")\n"
+    else
+      text = text .. i .. ". " .. "?" .. " (" .. v.peer_id .. ")\n"
+    end
   end
   send_large_msg(receiver, text)
 end
