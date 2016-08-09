@@ -16,6 +16,13 @@ local function is_spam(text)
   return isit
 end
 
+local function is_chan_fwd(msg)
+  if msg.fwd_from ~= nil then
+    return msg.fwd_from.peer_type == "channel"
+  end
+  return false
+end
+
 local function kick_user(user_id, chat_id)
   local chat = 'chat#id'..chat_id
   local user = 'user#id'..user_id
@@ -79,10 +86,18 @@ local function kick_user(user_id, chat_id)
               end
             end
             if matches[1] == 'enable' then
+              if matches[2] == 'fwd' then
+                redis:set(hash..':fwd', true)
+                return str2emoji(':information_source:')..' Kick on forward enabled on chat'
+              end
               redis:set(hash, true)
               return str2emoji(':information_source:')..' Anti-spam enabled on chat'
             end
             if matches[1] == 'disable' then
+              if matches[2] == 'fwd' then
+                redis:del(hash..':fwd')
+                return str2emoji(':information_source:')..' Kick on forward disabled on chat'
+              end
               redis:del(hash)
               return str2emoji(':information_source:')..' Anti-spam disabled on chat'
             end
@@ -122,8 +137,15 @@ local function kick_user(user_id, chat_id)
 
       if enabled then
         print('Anti-spam enabled')
+        local is_rly_spam = is_spam(msg.text)
 
-        if msg.from.type == 'user' and is_spam(msg.text) then
+        local hash_enable_fwd = hash_enable..':fwd'
+        local enabled_fwd = redis:get(hash_enable_fwd)
+        if enabled_fwd then
+          is_rly_spam = is_rly_spam or is_chan_fwd(msg)
+        end
+
+        if msg.from.type == 'user' and is_rly_spam then
           local receiver = get_receiver(msg)
           local user = msg.from.id
           local text = str2emoji(":exclamation:")..' User '
@@ -169,13 +191,16 @@ local function kick_user(user_id, chat_id)
       usage = {
         moderator = {
           "!antispam <enable>/<disable> : Enable or disable spam checking",
+          "!antispam <enable>/<disable> fwd : Enable or disable kicking who forwards from channels",
           "!antispam <addexcept>/<delexcept> <user_id> : Add user to antispam exceptions",
           "#addspamexcept (by reply) : Add user to antispam exceptions",
           "#delspamexcept (by reply) : Delete user from antispam exceptions"
         },
       },
       patterns = {
+        '^!antispam (enable) (fwd)$',
         '^!antispam (enable)$',
+        '^!antispam (disable) (fwd)$',
         '^!antispam (disable)$',
         '^!antispam (addexcept) (%d+)$',
         '^!antispam (delexcept) (%d+)$',
