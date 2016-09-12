@@ -23,7 +23,8 @@ do
             set_name = string.gsub(msg.to.print_name, '_', ' '),
             lock_name = 'no',
             lock_photo = 'no',
-            lock_member = 'no'
+            lock_member = 'no',
+			lock_bots = 'no'
           }
         }
         save_data(_config.moderation.data, data)
@@ -53,7 +54,8 @@ do
           set_name = string.gsub(msg.to.print_name, '_', ' '),
           lock_name = 'no',
           lock_photo = 'no',
-          lock_member = 'no'
+          lock_member = 'no',
+		  lock_bots = 'no'
         }
       }
       save_data(_config.moderation.data, data)

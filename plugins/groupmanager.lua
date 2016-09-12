@@ -233,6 +233,9 @@ do
     end
     if data[tostring(msg.to.id)] then
       local settings = data[tostring(msg.to.id)]['settings']
+	  if settings.lock_bots == nil then
+	    settings.lock_bots = 'no'
+	  end
       if matches[1] == 'setabout' and matches[2] then
         deskripsi = matches[2]
         return set_description(msg, data)
@@ -399,6 +402,7 @@ do
       "!group <lock|unlock> name : Lock/unlock group name",
       "!group <lock|unlock> photo : Lock/unlock group photo",
       "!group <lock|unlock> member : Lock/unlock group member",
+	  "!group <lock|unlock> bots : Lock/unlock adding bots to group",
       "!group settings : Show group settings"
     },
     patterns = {
