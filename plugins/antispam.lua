@@ -168,9 +168,15 @@ local function kick_user(user_id, chat_id)
           else
             send_msg(receiver, text, ok_cb, nil)
             if msg.from.username ~= nil then
-              snoop_msg('User @'..msg.from.username..' ['..msg.from.id..'] has been found spamming.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..msg.text)
+              if msg.text ~= nil then
+                snoop_msg('User @'..msg.from.username..' ['..msg.from.id..'] has been found spamming.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..msg.text)
+              else snoop_msg('User @'..msg.from.username..' ['..msg.from.id..'] has been found spamming.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nMedia message')
+              end
             else
-              snoop_msg('User '..string.gsub(msg.from.print_name, '_', ' ')..' ['..msg.from.id..'] has been found spamming.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..msg.text)
+              if msg.text ~= nil then
+                snoop_msg('User '..string.gsub(msg.from.print_name, '_', ' ')..' ['..msg.from.id..'] has been found spamming.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..msg.text)
+              else snoop_msg('User '..string.gsub(msg.from.print_name, '_', ' ')..' ['..msg.from.id..'] has been found spamming.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nMedia message')
+              end
             end
             if not is_chan_msg(msg) then
               kick_user(user, chat)

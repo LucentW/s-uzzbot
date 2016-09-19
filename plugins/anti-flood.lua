@@ -176,11 +176,17 @@ local function kick_user(user_id, chat_id)
               print('User is exempt from antiflood checks!')
               msg = nil
             else
-              if msg.from.username ~= nil then
+            if msg.from.username ~= nil then
+              if msg.text ~= nil then
                 snoop_msg('User @'..msg.from.username..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..msg.text)
-              else
-                snoop_msg('User '..string.gsub(msg.from.print_name, '_', ' ')..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..msg.text)
+              else snoop_msg('User @'..msg.from.username..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nMedia message')
               end
+            else
+              if msg.text ~= nil then
+                snoop_msg('User '..string.gsub(msg.from.print_name, '_', ' ')..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..msg.text)
+              else snoop_msg('User '..string.gsub(msg.from.print_name, '_', ' ')..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..msg.text)
+              end
+            end
               send_msg(receiver, text, ok_cb, nil)
               if not is_chan_msg(msg) then
                 kick_user(user, chat)
