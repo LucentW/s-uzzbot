@@ -176,10 +176,23 @@ local function kick_user(user_id, chat_id)
               print('User is exempt from antiflood checks!')
               msg = nil
             else
-              if msg.from.username ~= nil then
-                snoop_msg('User @'..msg.from.username..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..msg.text)
+			  local real_text
+			  if msg.media ~= nil then
+                if msg.media.caption ~= nil then
+                  real_text = msg.media.caption
+                else
+                  real_text = "[media with no caption]"
+                end
               else
-                snoop_msg('User '..string.gsub(msg.from.print_name, '_', ' ')..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..msg.text)
+                if msg.text ~= nil then
+                  real_text = msg.text
+                end
+              end
+
+              if msg.from.username ~= nil then
+                snoop_msg('User @'..msg.from.username..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..real_text)
+              else
+                snoop_msg('User '..string.gsub(msg.from.print_name, '_', ' ')..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..real_text)
               end
               send_msg(receiver, text, ok_cb, nil)
               if not is_chan_msg(msg) then

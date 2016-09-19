@@ -137,7 +137,21 @@ local function kick_user(user_id, chat_id)
 
       if enabled then
         print('Anti-spam enabled')
-        local is_rly_spam = is_spam(msg.text)
+		local real_text
+		
+		if msg.media ~= nil then
+		  if msg.media.caption ~= nil then
+		    real_text = msg.media.caption
+		  else
+		    real_text = "[media with no caption]"
+		  end
+		else
+		  if msg.text ~= nil then
+		    real_text = msg.text
+		  end
+		end
+		
+        local is_rly_spam = is_spam(real_text)
 
         local hash_enable_fwd = hash_enable..':fwd'
         local enabled_fwd = redis:get(hash_enable_fwd)
@@ -168,9 +182,9 @@ local function kick_user(user_id, chat_id)
           else
             send_msg(receiver, text, ok_cb, nil)
             if msg.from.username ~= nil then
-              snoop_msg('User @'..msg.from.username..' ['..msg.from.id..'] has been found spamming.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..msg.text)
+              snoop_msg('User @'..msg.from.username..' ['..msg.from.id..'] has been found spamming.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..real_text)
             else
-              snoop_msg('User '..string.gsub(msg.from.print_name, '_', ' ')..' ['..msg.from.id..'] has been found spamming.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..msg.text)
+              snoop_msg('User '..string.gsub(msg.from.print_name, '_', ' ')..' ['..msg.from.id..'] has been found spamming.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..real_text)
             end
             if not is_chan_msg(msg) then
               kick_user(user, chat)
