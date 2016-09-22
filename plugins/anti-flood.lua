@@ -176,8 +176,8 @@ local function kick_user(user_id, chat_id)
               print('User is exempt from antiflood checks!')
               msg = nil
             else
-			  local real_text
-			  if msg.media ~= nil then
+              local real_text
+              if msg.media ~= nil then
                 if msg.media.caption ~= nil then
                   real_text = msg.media.caption
                 else

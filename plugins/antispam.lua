@@ -137,20 +137,20 @@ local function kick_user(user_id, chat_id)
 
       if enabled then
         print('Anti-spam enabled')
-		local real_text
-		
-		if msg.media ~= nil then
-		  if msg.media.caption ~= nil then
-		    real_text = msg.media.caption
-		  else
-		    real_text = "[media with no caption]"
-		  end
-		else
-		  if msg.text ~= nil then
-		    real_text = msg.text
-		  end
-		end
-		
+        local real_text
+
+        if msg.media ~= nil then
+          if msg.media.caption ~= nil then
+            real_text = msg.media.caption
+          else
+            real_text = "[media with no caption]"
+          end
+        else
+          if msg.text ~= nil then
+            real_text = msg.text
+          end
+        end
+
         local is_rly_spam = is_spam(real_text)
 
         local hash_enable_fwd = hash_enable..':fwd'

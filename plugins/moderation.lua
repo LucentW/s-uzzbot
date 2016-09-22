@@ -24,7 +24,7 @@ do
             lock_name = 'no',
             lock_photo = 'no',
             lock_member = 'no',
-	    lock_bots = 'no'
+            lock_bots = 'no'
           }
         }
         save_data(_config.moderation.data, data)
@@ -55,7 +55,7 @@ do
           lock_name = 'no',
           lock_photo = 'no',
           lock_member = 'no',
-	  lock_bots = 'no'
+          lock_bots = 'no'
         }
       }
       save_data(_config.moderation.data, data)
@@ -363,9 +363,9 @@ do
         local member = string.gsub(matches[2], "@", "")
         resolve_username(member, resolved_username, {mod_cmd=mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
         --if not is_chan_msg(msg) then
-        --  chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
+        -- chat_info(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan_msg(msg)})
         --else
-        --  channel_get_users(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
+        -- channel_get_users(receiver, username_id, {mod_cmd= mod_cmd, receiver=receiver, member=member, is_chan=is_chan_msg(msg)})
         --end
       end
     end
