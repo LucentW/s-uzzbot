@@ -243,16 +243,15 @@ end
 function is_mod(user_id, chat_id)
   local var = false
   local data = load_data(_config.moderation.data)
-  local user = user_id
-  if data[chat_id] then
-    if data[chat_id]['moderators'] then
-      if data[chat_id]['moderators'][tostring(user)] then
+  if data[tostring(chat_id)] then
+    if data[tostring(chat_id)]['moderators'] then
+      if data[tostring(chat_id)]['moderators'][tostring(user_id)] then
         var = true
       end
     end
   end
   if data['admins'] then
-    if data['admins'][tostring(user)] then
+    if data['admins'][tostring(user_id)] then
       var = true
     end
   end
