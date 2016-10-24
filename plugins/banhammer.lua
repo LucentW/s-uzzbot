@@ -98,6 +98,9 @@ local function unban_by_reply(extra, success, result)
   local hash = 'banned:'..result.to.peer_id..':'..result.from.peer_id
   if redis:get(hash) then
     redis:del(hash)
+    if is_chan_msg(result) then
+      channel_unblock(get_receiver(result), get_receiver(result.from))
+    end
     send_large_msg(extra.receiver, str2emoji(':information_source:')..' User '..result.from.peer_id..' unbanned!')
   else
     send_large_msg(extra.receiver, str2emoji(':information_source:')..' There is no ban for user '..result.from.peer_id..'!')
@@ -413,6 +416,9 @@ local function resolved_username(cb_extra, success, result)
       local hash = 'banned:'..chat_id..':'..member_id
       if redis:get(hash) then
         redis:del(hash)
+        if is_chan then
+          channel_unblock(receiver, "user#id"..member_id)
+        end
         return send_large_msg(receiver, str2emoji(':information_source:')..' User '..member_id..' unbanned')
       else
         return send_large_msg(receiver, str2emoji(':information_source:')..' There is no ban for '..member_id..' here.')
@@ -538,6 +544,9 @@ local function run(msg, matches)
           local hash = 'banned:'..chat_id..':'..user_id
           if redis:get(hash) then
             redis:del(hash)
+            if is_chan_msg(msg) then
+              channel_unblock(receiver, "user#id"..user_id)
+            end
             return str2emoji(':information_source:')..' User '..user_id..' unbanned'
           else
             return str2emoji(':information_source:')..' There is no ban for '..user_id..' here.'

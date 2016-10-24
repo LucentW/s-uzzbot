@@ -582,25 +582,29 @@ function send_large_msg_callback(cb_extra, success, result)
 
   local destination = cb_extra.destination
   local text = cb_extra.text
+
   if not text then
     return
   end
-  local text_len = string.len(text)
-  local num_msg = math.ceil(text_len / text_max)
+  local text_len = string.len(text) or 0
 
-  if num_msg <= 1 then
-    send_msg(destination, text, ok_cb, false)
-  else
+  if text_len > 0 then
+    local num_msg = math.ceil(text_len / text_max)
 
-    local my_text = string.sub(text, 1, 4096)
-    local rest = string.sub(text, 4096, text_len)
+    if num_msg <= 1 then
+      send_msg(destination, text, ok_cb, false)
+    else
 
-    local cb_extra = {
-      destination = destination,
-      text = rest
-    }
+      local my_text = string.sub(text, 1, 4096)
+      local rest = string.sub(text, 4096, text_len)
 
-    send_msg(destination, my_text, send_large_msg_callback, cb_extra)
+      local cb_extra = {
+        destination = destination,
+        text = rest
+      }
+
+      send_msg(destination, my_text, send_large_msg_callback, cb_extra)
+    end
   end
 end
 
