@@ -261,37 +261,24 @@ local function pre_process(msg)
   local whitelist = redis:get(hash)
   local issudo = is_sudo(msg)
 
-  local chat_id = msg.to.id
-  local hashchat = 'whitelist:modonly:'..chat_id
-  local whitelistmod = redis:get(hashchat)
-
   -- Allow all sudo users even if whitelist is allowed
-  if (whitelist or whitelistmod) and not issudo then
+  if whitelist and not issudo then
     print('Whitelist enabled and not sudo')
     -- Check if user or chat is whitelisted
     local allowed = is_user_whitelisted(msg.from.id)
-    local allowedmod = is_momod(msg)
 
-    if not allowed and not allowedmod then
+    if not allowed then
       print('User '..msg.from.id..' not whitelisted')
       if msg.to.type == 'chat' then
         allowed = is_chat_whitelisted(msg.to.id)
         if not allowed then
           print ('Chat '..msg.to.id..' not whitelisted')
+          msg = nil
         else
           print ('Chat '..msg.to.id..' whitelisted :)')
         end
       end
-    else
-      print('User '..msg.from.id..' allowed :)')
     end
-
-    if not allowed and not allowedmod then
-      msg.text = 'PlAcEhOlDeR-tExT'
-    end
-
-  else
-    print('Whitelist not enabled or is sudo')
   end
 
   return msg

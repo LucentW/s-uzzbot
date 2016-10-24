@@ -17,13 +17,26 @@ function on_msg_receive (msg)
 
   local receiver = get_receiver(msg)
 
+  local chat_id = msg.to.id
+  local hashchat = 'whitelist:modonly:'..chat_id
+  local whitelistmod = redis:get(hashchat) or false
+
   -- vardump(msg)
   msg = pre_process_service_msg(msg)
   if msg_valid(msg) then
     msg = pre_process_msg(msg)
     if msg then
-      match_plugins(msg)
-      mark_read(receiver, ok_cb, false)
+      if not whitelistmod or (whitelistmod and is_momod(msg)) then
+        match_plugins(msg)
+      else
+        print('Message ignored -- '..chat_id..' has modonly wl enabled')
+      end
+
+-- Commented out since it is a cosmetic feature.
+-- Also breaks UX on groups since on standard mode it marks the message
+-- as read for everybody.
+--    mark_read(receiver, ok_cb, false)
+
     end
   end
 end
