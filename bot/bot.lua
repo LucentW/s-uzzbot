@@ -162,6 +162,16 @@ local function is_plugin_disabled_on_chat(plugin_name, receiver)
   return false
 end
 
+-- Check if nsfw is disabled on _config.disabled_nsfw_on_chat table
+local function is_nsfw_disabled_on_chat(receiver)
+  local disabled_chats = _config.disabled_nsfw_on_chat
+  -- Table exists and chat has disabled plugins
+  if disabled_chats and disabled_chats[receiver] then
+    return disabled_chats[receiver] or false
+  end
+  return false
+end
+
 function match_plugin(plugin, plugin_name, msg)
   local receiver = get_receiver(msg)
 
@@ -173,6 +183,9 @@ function match_plugin(plugin, plugin_name, msg)
 
       if not is_sudo(msg) then
         if is_plugin_disabled_on_chat(plugin_name, receiver) then
+          return nil
+        end
+        if plugin.nsfw and is_nsfw_disabled_on_chat(receiver) then
           return nil
         end
       end

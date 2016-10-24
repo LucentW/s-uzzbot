@@ -66,6 +66,7 @@ do
       "^!boobs$",
       "^!butts$"
     },
+    nsfw = true,
     run = run
   }
 

@@ -149,10 +149,49 @@ do
     return str2emoji(':information_source:')..' Plugin '..plugin..' is enabled again'
   end
 
+  local function disable_nsfw_on_chat(receiver)
+    if not _config.disabled_nsfw_on_chat then
+      _config.disabled_nsfw_on_chat = {}
+    end
+
+    _config.disabled_nsfw_on_chat[receiver] = true
+
+    save_config()
+    return str2emoji(':information_source:')..' NSFW disabled on this chat'
+  end
+
+  local function reenable_nsfw_on_chat(receiver)
+    if not _config.disabled_nsfw_on_chat then
+      return str2emoji(':information_source:')..' NSFW is not disabled.'
+    end
+
+    if not _config.disabled_nsfw_on_chat[receiver] then
+      return str2emoji(':information_source:')..' NSFW is not disabled on this chat'
+    end
+
+    _config.disabled_nsfw_on_chat[receiver] = false
+    save_config()
+    return str2emoji(':information_source:')..' NSFW is enabled again'
+  end
+
   local function run(msg, matches)
     -- Show the available plugins
     if matches[1] == '!plugins' and is_sudo(msg) then --after changed to moderator mode, set only sudo
       return list_all_plugins()
+    end
+
+    -- Enable nsfw on chat
+    if matches[1] == 'nsfw' and matches[2] == 'enable' then
+      local receiver = get_receiver(msg)
+      print('enable nsfw on this chat')
+      return reenable_nsfw_on_chat(receiver)
+    end
+
+    -- Disable nsfw on chat
+    if matches[1] == 'nsfw' and matches[2] == 'disable' then
+      local receiver = get_receiver(msg)
+      print('disable nsfw on this chat')
+      return disable_nsfw_on_chat(receiver)
     end
 
     -- Re-enable a plugin for this chat
@@ -199,6 +238,8 @@ do
       moderator = {
         "!plugins disable [plugin] chat : disable plugin only this chat.",
         "!plugins enable [plugin] chat : enable plugin only this chat.",
+        "!plugins nsfw disable : disables nsfw plugins on this chat.",
+        "!plugins nsfw enable : enables nsfw on this chat."
       },
       sudo = {
         "!plugins : list all plugins.",
@@ -208,6 +249,8 @@ do
     },
     patterns = {
       "^!plugins$",
+      "^!plugins? (nsfw) (enable)",
+      "^!plugins? (nsfw) (disable)",
       "^!plugins? (enable) ([%w_%.%-]+)$",
       "^!plugins? (disable) ([%w_%.%-]+)$",
       "^!plugins? (enable) ([%w_%.%-]+) (chat)",

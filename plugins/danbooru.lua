@@ -68,6 +68,7 @@ do
       "^!danbooru ?(w)$",
       "^!danbooru ?(m)$"
     },
+    nsfw = true,
     run = run
   }
 
