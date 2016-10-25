@@ -5,6 +5,8 @@ local params = {
   host = '127.0.0.1',
   port = 6379,
   db = 0
+  --- for multiple instances on the same machine 
+  --- change db = 0 with a number from 0 to 15
 }
 
 -- Overwrite HGETALL
