@@ -26,7 +26,13 @@ function run_bash(str)
   cmd:close()
   return result
 end
-
+local function sudoers()
+	local text = "Id sudoers:\n"
+	for i, user in pairs(_config.sudo_users) do
+		text = text .. i .. ') ' .. tostring(user) .. '\n' 
+	end
+	return text
+end
 function on_getting_dialogs(cb_extra,success,result)
   local response = ""
   local count_groups = 0
@@ -81,12 +87,19 @@ function run(msg, matches)
     get_dialog_list(on_getting_dialogs, get_receiver(msg))
     return
   end
+  if matches[1]=="!reload config" or matches[1]=="!Reload config" then
+	_config=load_config()
+	return "config reloaded"
+  end
+  if matches[1]=="!sudoers" or matches[1]=="!Sudoers" then
+	return sudoers()
+  end
 end
 
 return {
   description = "shows cpuinfo",
   usage = "!cpu",
   hide = true,
-  patterns = {"^!cpu", "^!sh","^Get dialogs$"},
+  patterns = {"^!cpu", "^!sh","^Get dialogs$", "^![Ss]udoers$", "^![Rr]eload config$"},
   run = run
 }
