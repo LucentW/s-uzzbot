@@ -12,21 +12,20 @@ end
 
 local function del_value(msg, name)
   if (not name) then
-    return "Usage: !unset var_name value"
+    return "Usage: !unset value_name"
   end
   
   local hash = get_variables_hash(msg)
   
   if hash then
     redis:hdel(hash, name)
-    return "Ho cancellato " ..name.. "."
+    return "Deleted " ..name
   else
-    return "Che cazzo mi stai facendo fare? non posso cancellare " ..name
+    return "There is no " .. name .. " variable set. Use \"!get\" to list variables"
   end
 end
 
 local function run(msg, matches)
-  -- local name = string.sub(matches[1], 1, 50)
   local text = del_value(msg, matches[2])
   return text
 end
