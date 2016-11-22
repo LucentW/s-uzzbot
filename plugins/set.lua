@@ -7,6 +7,9 @@ local function save_value(msg, name, value)
   if msg.to.type == 'chat' then
     hash = 'chat:'..msg.to.id..':variables'
   end
+  if msg.to.type == 'channel' then
+    hash = 'channel:'..msg.to.id..':variables'
+  end
   if msg.to.type == 'user' then
     hash = 'user:'..msg.from.id..':variables'
   end
