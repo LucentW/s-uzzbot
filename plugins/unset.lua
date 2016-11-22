@@ -3,12 +3,12 @@ local function get_variables_hash(msg)
     return 'chat:'..msg.to.id..':variables'
   end
   if msg.to.type == 'channel' then
-    return 'channel:'..msg.from.id..':variables'
+    return 'channel:'..msg.to.id..':variables'
   end
   if msg.to.type == 'user' then
     return 'user:'..msg.from.id..':variables'
   end
-end 
+end
 
 local function del_value(msg, name)
   if (not name) then
@@ -17,7 +17,7 @@ local function del_value(msg, name)
   
   local hash = get_variables_hash(msg)
   
-  if hash then
+  if hash and redis:hget(hash, name) then
     redis:hdel(hash, name)
     return "Deleted " ..name
   else
