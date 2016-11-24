@@ -24,7 +24,6 @@ do local _ = {
     "meme",
     "weather",
     "pokedex",
-    "gnuplot",
     "rss",
     "roll",
     "join",
