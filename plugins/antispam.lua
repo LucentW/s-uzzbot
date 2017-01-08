@@ -5,7 +5,7 @@ local SPAM_PATTERNS = {
   "[Ss][Hh].[Ss][Tt]/",
   "[Tt].[Mm][Ee]/",
   "[Tt][Ee][Ll][Ee][Gg][Rr][Aa][Mm].[Dd][Oo][Gg]/",
-  "[Cc][Hh][Aa][Tt].[Ww][Hh][Aa][Tt][Ss][Aa][Pp][Pp].[Cc][Oo][Mm]"
+  "[Cc][Hh][Aa][Tt].[Ww][Hh][Aa][Tt][Ss][Aa][Pp][Pp].[Cc][Oo][Mm]/"
   -- "?[Ss][Tt][Aa][Rr][Tt]="
 }
 
