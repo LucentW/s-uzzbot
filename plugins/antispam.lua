@@ -1,11 +1,11 @@
 local SPAM_PATTERNS = {
-  "[Tt][Ee][Ll][Ee][Gg][Rr][Aa][Mm].[Mm][Ee]/",
-  "[Tt][Ll][Gg][Rr][Mm].[Mm][Ee]/",
-  "[Aa][Dd][Ff].[Ll][Yy]/",
-  "[Ss][Hh].[Ss][Tt]/",
-  "[Tt].[Mm][Ee]/",
-  "[Tt][Ee][Ll][Ee][Gg][Rr][Aa][Mm].[Dd][Oo][Gg]/",
-  "[Cc][Hh][Aa][Tt].[Ww][Hh][Aa][Tt][Ss][Aa][Pp][Pp].[Cc][Oo][Mm]"
+  "[Tt][Ee][Ll][Ee][Gg][Rr][Aa][Mm]%.[Mm][Ee]/%S+",
+  "[Tt][Ll][Gg][Rr][Mm]%.[Mm][Ee]/%S+",
+  "[Aa][Dd][Ff]%.[Ll][Yy]/%S+",
+  "[Ss][Hh]%.[Ss][Tt]/%S+",
+  "[Tt]%.[Mm][Ee]/%S+",
+  "[Tt][Ee][Ll][Ee][Gg][Rr][Aa][Mm]%.[Dd][Oo][Gg]/%S+",
+  "[Cc][Hh][Aa][Tt]%.[Ww][Hh][Aa][Tt][Ss][Aa][Pp][Pp]%.[Cc][Oo][Mm]/%S+"
   -- "?[Ss][Tt][Aa][Rr][Tt]="
 }
 
