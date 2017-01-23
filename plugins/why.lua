@@ -1,5 +1,3 @@
-do
-
   local function is_banned(user_id, chat_id)
     local hash = 'banned:'..chat_id..':'..user_id
     local banned = redis:get(hash)
@@ -12,7 +10,7 @@ do
     return superbanned or false
   end
 
-  function why_real(user, receiver)
+  local function why_real(user, receiver)
     local chat_id = string.gsub(receiver, "chat#id", "")
     chat_id = string.gsub(receiver, "channel#id", "")
     local banned = is_banned(user.peer_id, chat_id)
@@ -47,7 +45,7 @@ do
 
   end
 
-  function why_id(peer_id, chat_id)
+  local function why_id(peer_id, chat_id)
     local banned = is_banned(peer_id, chat_id)
     local superbanned = is_super_banned(peer_id)
 
@@ -75,42 +73,41 @@ do
 
   end
 
-  function why(extra, success, result)
+  local function why(cb_extra, success, result)
     if result.from ~= nil then
-      why_real(result.from, extra.from)
+      why_real(result.from, cb_extra.receiver)
     else
-      why_real(result, extra.from)
+      why_real(result, cb_extra.receiver)
     end
   end
 
-  function run(msg, matches)
-    if matches[1] == '!why' then
-      if matches[2] == '@' then
-        return resolve_username(matches[3], why, {from=get_receiver(msg)})
-      end
-      return why_id(matches[2], msg.from.peer_id)
+  local function run(msg, matches)
+    local receiver = get_receiver(msg)
+    if msg.reply_id then
+      get_message(msg.reply_id, why, {receiver=receiver})
+      return nil
     end
     if matches[1] == '#why' then
-      if msg.reply_id then
-        get_message(msg.reply_id, why, {from=get_receiver(msg)})
-      else
-        return str2emoji(":point_right:").." You must reply to a message to get informations about that."
-      end
+      return str2emoji(":point_right:").." You must reply to a message to get informations about that."
+    end
+    if matches[1]:match("^%d+$") then
+      return why_id(matches[1], msg.to.id)
+    else
+      return resolve_username(matches[1]:gsub("@", ""), why, {receiver=receiver})
     end
   end
 
   return {
     description = "Get informations about a username/ID",
     usage = {
-      "!why <@username>/<user_id> : Returns informations about that user",
+      "!why <username>/<user_id> : Returns informations about that user",
       "#why (by reply) : Returns informations about that user",
     },
     patterns = {
-      "^(!why) (%d+)$",
-      "^(!why) (@)(.*)$",
-      "^(#why)$"
+      "^!why (%d+)$",
+      "^!why (@?%a%S+)$",
+      "^#why$"
     },
     run = run
   }
 
-end
