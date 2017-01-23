@@ -1,21 +1,21 @@
 local function user_print_name(user)
-  if user.print_name then
-    return user.print_name
-  end
   local text = ''
   if user.first_name then
-    text = user.last_name..' '
+    text = user.first_name..' '
   end
-  if user.lastname then
+  if user.last_name then
     text = text..user.last_name
   end
-  return text
+  if user.title then
+    text = user.title
+  end
+  return text or user.print_name:gsub('_', ' ')
 end
 
 local function returnids(cb_extra, success, result)
   local receiver = cb_extra.receiver
   local chat_id = result.peer_id
-  local chatname = result.print_name
+  local chatname = result.title
 
   local text = str2emoji(":busts_in_silhouette:")..' IDs for chat '..chatname
   ..' ('..chat_id..')\n'
@@ -24,7 +24,7 @@ local function returnids(cb_extra, success, result)
   i = 0
   for k,v in pairs(result.members) do
     i = i+1
-    text = text .. i .. ". " .. string.gsub(v.print_name, "_", " ") .. " (" .. v.peer_id .. ")\n"
+    text = text .. i .. ". " .. user_print_name(v) .. " (" .. v.peer_id .. ")\n"
   end
   send_large_msg(receiver, text)
 end
@@ -41,7 +41,7 @@ local function returnidschan(cb_extra, success, result)
   for k,v in pairs(result) do
     i = i+1
     if v.print_name ~= nil then
-      text = text .. i .. ". " .. string.gsub(v.print_name, "_", " ") .. " (" .. v.peer_id .. ")\n"
+      text = text .. i .. ". " .. user_print_name(v) .. " (" .. v.peer_id .. ")\n"
     else
       text = text .. i .. ". " .. "?" .. " (" .. v.peer_id .. ")\n"
     end
@@ -56,6 +56,7 @@ local function username_id(cb_extra, success, result)
   local text = str2emoji(":no_entry_sign:")..' User @'..qusername..' does not exist!'
 
   if success then
+    qusername = result.username
     if result.peer_type == 'channel' then
       text = str2emoji(":id:")..' ID for group/channel\n'..str2emoji(":busts_in_silhouette:")..' @'..qusername..' : '..result.peer_id
     else
@@ -70,7 +71,7 @@ local function id_by_reply(cb_extra, success, result)
   if result.from.username then
     username = '@'..result.from.username
   else
-    username = result.from.print_name
+    username = user_print_name(result.from)
   end
   send_large_msg(cb_extra, str2emoji(":id:")..' ID for user\n'..str2emoji(":bust_in_silhouette:")..' '..username..' : '..result.from.peer_id)
 end
@@ -78,10 +79,10 @@ end
 local function run(msg, matches)
   local receiver = get_receiver(msg)
   if matches[1] == "!id" then
-    local text = str2emoji(":bust_in_silhouette:")..' Name: '.. string.gsub(user_print_name(msg.from),'_', ' ')
+    local text = str2emoji(":bust_in_silhouette:")..' Name: '.. user_print_name(msg.from)
     text = text..'\n'..str2emoji(":id:")..' ID: ' .. msg.from.id
     if is_chat_msg(msg) then
-      text = text .. "\n"..str2emoji(":busts_in_silhouette:").." You are in group " .. string.gsub(user_print_name(msg.to), '_', ' ')
+      text = text .. "\n"..str2emoji(":busts_in_silhouette:").." You are in group " .. user_print_name(msg.to)
       text = text .. " (ID: " .. msg.to.id .. ")"
     end
     return text
@@ -118,7 +119,7 @@ local function run(msg, matches)
       if not is_chan_msg(msg) then
         chat_info(chat, returnids, {receiver=receiver})
       else
-        channel_get_users(chat, returnidschan, {peer_id=msg.to.id, print_name=string.gsub(user_print_name(msg.to), '_', ' '), receiver=receiver})
+        channel_get_users(chat, returnidschan, {peer_id=msg.to.id, print_name=user_print_name(msg.to), receiver=receiver})
       end
     end
   else
@@ -132,10 +133,12 @@ return {
   description = "Know your id or the id of a chat members.",
   usage = {
     "!id: Return your ID and the chat id if you are in one.",
-    "!ids chat: Return the IDs of the current chat members.",
-    "!ids chat chat#id<chat_id>: Return the IDs of the <chat_id> members.",
-    "!ids chat channel#id<channel_id>: Return the IDs of the <channel_id> (supergroup) members.",
-    "!id <username> : Return the id from username given."
+    "!id <username> : Return the id from username given.",
+    moderator = {
+      "!ids chat: Return the IDs of the current chat members.",
+      "!ids chat chat#id<chat_id>: Return the IDs of the <chat_id> members.",
+      "!ids chat channel#id<channel_id>: Return the IDs of the <channel_id> (supergroup) members."
+      }
   },
   patterns = {
     "^!id$",
