@@ -138,7 +138,7 @@ return {
       "!ids chat: Return the IDs of the current chat members.",
       "!ids chat chat#id<chat_id>: Return the IDs of the <chat_id> members.",
       "!ids chat channel#id<channel_id>: Return the IDs of the <channel_id> (supergroup) members."
-      }
+    }
   },
   patterns = {
     "^!id$",

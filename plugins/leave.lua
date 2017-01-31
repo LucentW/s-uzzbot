@@ -35,8 +35,8 @@ return {
     admin = {
       "!leave : bot will leave current chat/channel",
       "!leave channel <id> : bot will leave the channel with id <id> (supergroup or broadcast channel)",
-      "!leave chat <id> : bot will leave the chat with id <id> (normal group)"      
-      }
-    },
+      "!leave chat <id> : bot will leave the chat with id <id> (normal group)"
+    }
+  },
   run = run
-  }
+}

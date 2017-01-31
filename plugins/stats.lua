@@ -7,19 +7,17 @@ do
   local TIME_CHECK = 4 -- seconds
 
   local function user_print_name(user)
-    if user.print_name then
-      return user.print_name
-    end
-
     local text = ''
     if user.first_name then
-      text = user.last_name..' '
+      text = user.first_name..' '
     end
-    if user.lastname then
+    if user.last_name then
       text = text..user.last_name
     end
-
-    return text
+    if user.title then
+      text = user.title
+    end
+    return text or user.print_name:gsub('_', ' ')
   end
 
   -- Returns a table with `name` and `msgs`
