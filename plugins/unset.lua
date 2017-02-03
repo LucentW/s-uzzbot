@@ -14,14 +14,14 @@ local function del_value(msg, name)
   if (not name) then
     return "Usage: !unset value_name"
   end
-  
+
   local hash = get_variables_hash(msg)
-  
+
   if hash and redis:hget(hash, name) then
     redis:hdel(hash, name)
-    return "Deleted " ..name
+    return "Deleted " ..name.." variable."
   else
-    return "There is no " .. name .. " variable set. Use \"!get\" to list variables"
+    return "There is no " .. name .. " variable set. Use \"!get\" to list variables."
   end
 end
 
@@ -31,10 +31,10 @@ local function run(msg, matches)
 end
 
 return {
-  description = "Plugin for deleting values. get.lua plugin is necessary to retrieve them.", 
+  description = "Plugin for deleting values. get.lua plugin is necessary to retrieve them.",
   usage = "!unset [value_name]: deletes the data with the value_name name.",
   patterns = {
     "^(!unset) (.+)$"
-  }, 
-  run = run 
+  },
+  run = run
 }

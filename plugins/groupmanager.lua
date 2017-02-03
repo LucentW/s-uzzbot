@@ -181,7 +181,7 @@ do
     end
     local group_bots_lock = data[tostring(msg.to.id)]['settings']['lock_bots']
     if group_bots_lock == 'yes' then
-      return 'Group photo is already locked'
+      return 'Group bots are already locked'
     else
       data[tostring(msg.to.id)]['settings']['lock_bots'] = 'yes'
       save_data(_config.moderation.data, data)
