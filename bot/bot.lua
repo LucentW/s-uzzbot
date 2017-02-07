@@ -265,7 +265,6 @@ function create_config( )
       "join",
       "eur",
       "isup",
-      "torrent_search",
       "music",
       "hello",
       "invite_sudo",
@@ -277,14 +276,19 @@ function create_config( )
       "tex",
       "webshot",
       "translate",
-      "mute"
+      "mute",
+      "kitty",
+      "ud",
+      "leave",
+      "why"
     },
     sudo_users = {our_id},
     disabled_channels = {},
     moderation = {data = 'data/moderation.json'}
   }
   serialize_to_file(config, './data/config.lua')
-  print ('saved config into ./data/config.lua')
+  print ('Saved clean configuration into ./data/config.lua')
+  print ('Make sure to edit sudo_users and add your ID.')
 end
 
 function on_our_id (id)
@@ -367,3 +371,4 @@ our_id = 0
 now = os.time()
 math.randomseed(now)
 started = false
+
