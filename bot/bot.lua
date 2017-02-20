@@ -371,4 +371,3 @@ our_id = 0
 now = os.time()
 math.randomseed(now)
 started = false
-
