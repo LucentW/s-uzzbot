@@ -127,9 +127,41 @@ do
     hash = 'chat:*:users'
     r = redis:eval(redis_scan, 1, hash)
     text = text..'\nChats: '..r
+    hash = 'banned:*'
+    r = redis:eval(redis_scan, 1, hash)
+    text = text .. '\nBans: ' ..r
+    hash = 'superbanned:*'
+    r = redis:eval(redis_scan, 1, hash)
+    text = text .. '\nSuperbans: ' ..r
+    hash = 'blocklist:*'
+    r = redis:eval(redis_scan, 1, hash)
+    text = text .. '\nBlocklist: ' ..r
 
     return text
 
+  end
+
+  local function superban_stats()
+    local hash = 'superbanned:*'
+    local r = redis:keys(hash)
+    if not r then
+      return "No ids superbanned"
+    end
+    local text = 'List of superbanned ids:\n\n---------'
+    for k, v in pairs(r) do
+      text = text .. "\n " .. k .. ". " .. v:gsub("superbanned:", "")
+    end
+    return text
+  end
+
+  local function blocklist_stats()
+    local hash = 'blocklist:*'
+    local r = redis:keys(hash)
+    local text = 'blocklist ids:\n\n---------'
+    for k, v in pairs(r) do
+      text = text .. "\n " .. k .. ". " .. v:gsub("blocklist:", "")
+    end
+    return text
   end
 
   local function run(msg, matches)
@@ -159,6 +191,23 @@ do
           return chat_stats(matches[3])
         end
       end
+
+      if matches[2] == "superban" then
+        if not is_admin(msg) then
+          return "This command require privileged user"
+        else
+          return superban_stats()
+        end
+      end
+
+      if matches[2] == "blocklist" then
+        if not is_blocklistadm(msg) then
+          return "This command require privileged user"
+        else
+          return blocklist_stats()
+        end
+      end
+
     end
   end
 
@@ -172,8 +221,10 @@ do
     },
     patterns = {
       "^!([Ss]tats)$",
-      "^!([Ss]tats) (chat) (%d+)",
-      "^!([Ss]tats) (bot)"
+      "^!([Ss]tats) (chat) (%d+)$",
+      "^!([Ss]tats) (bot)$",
+      "^!([Ss]tats) (superban)s?$",
+      "^!([Ss]tats) (blocklist)"
     },
     run = run,
     pre_process = pre_process
