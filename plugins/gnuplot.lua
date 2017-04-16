@@ -19,6 +19,10 @@ do
   local function gnuplot(msg, fun)
     local receiver = get_receiver(msg)
 
+    if string.match(fun, "\"") or string.match(fun, "'") or string.match(fun, "`") then
+      return "Invalid input"
+    end
+
     -- We generate the plot commands
     local formattedString = [[
     set grid
@@ -56,7 +60,7 @@ do
     if(status == 0) then
       return gnuplot(msg,matches[1])
     elseif(status == 1) then
-      return "It seems that this bot miss a dependency :/"
+      return "It seems that this bot lacks a dependency :/"
     else
       return "It seems that this bot doesn't have gnuplot :/"
     end
