@@ -3,9 +3,9 @@ local function run(msg, matches)
     if not msg.service then
       return "Are you trying to troll me?"
     end
-    local data = load_data(_config.moderation.data)
+    local data = load_data(_config.moderation.data, true)
     data[tostring(msg.action.channel_id)] = data[tostring(msg.to.id)]
-    save_data(_config.moderation.data, data)
+    save_data(_config.moderation.data, data, true)
     return send_large_msg('channel#id'..msg.action.channel_id, "Moderation data migrated successfully.")
   end
   if msg.to.type == 'chat' and is_momod then

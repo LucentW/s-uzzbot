@@ -44,7 +44,7 @@ do local _ = {
     "mute"
   },
   moderation = {
-    data = "data/moderation.json"
+    data = "moderationdata" -- Redis key
   },
   sudo_users = {
     INSERT_YOUR_ID_HERE

@@ -329,26 +329,34 @@ function load_plugins()
 end
 
 -- custom add
-function load_data(filename)
-
-  local f = io.open(filename)
-  if not f then
-    return {}
+function load_data(filename, fromRedis)
+  local s
+  if fromRedis then
+    print(filename)
+    s = redis:get(filename)
+  else
+    local f = io.open(filename)
+    if not f then
+      return {}
+    end
+    s = f:read('*all')
+    f:close()
   end
-  local s = f:read('*all')
-  f:close()
   local data = JSON.decode(s)
 
   return data
 
 end
 
-function save_data(filename, data)
-
+function save_data(filename, data, toRedis)
   local s = JSON.encode(data)
   local f = io.open(filename, 'w')
-  f:write(s)
-  f:close()
+  if toRedis then
+    redis:set(filename, s)
+  else
+    f:write(s)
+    f:close()
+  end
 
 end
 

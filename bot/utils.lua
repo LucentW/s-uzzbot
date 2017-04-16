@@ -179,7 +179,7 @@ end
 -- user has admins privileges
 function is_admin(msg)
   local var = false
-  local data = load_data(_config.moderation.data)
+  local data = load_data(_config.moderation.data, true)
   local user = msg.from.id
   local admins = 'admins'
   if data[tostring(admins)] then
@@ -198,7 +198,7 @@ end
 -- user has blocklist adding privileges
 function is_blocklistadm(msg)
   local var = false
-  local data = load_data(_config.moderation.data)
+  local data = load_data(_config.moderation.data, true)
   local user = msg.from.id
   local blocklist = 'blocklist'
   if data[tostring(blocklist)] then
@@ -217,7 +217,7 @@ end
 -- user has moderator privileges
 function is_momod(msg)
   local var = false
-  local data = load_data(_config.moderation.data)
+  local data = load_data(_config.moderation.data, true)
   local user = msg.from.id
   if data[tostring(msg.to.id)] then
     if data[tostring(msg.to.id)]['moderators'] then
@@ -242,7 +242,7 @@ end
 -- check whether user is mod, admin or sudo
 function is_mod(user_id, chat_id)
   local var = false
-  local data = load_data(_config.moderation.data)
+  local data = load_data(_config.moderation.data, true)
   if data[tostring(chat_id)] then
     if data[tostring(chat_id)]['moderators'] then
       if data[tostring(chat_id)]['moderators'][tostring(user_id)] then
