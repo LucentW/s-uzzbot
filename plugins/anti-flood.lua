@@ -149,7 +149,7 @@ local function kick_user(user_id, chat_id)
           local hash = 'anti-flood:'..msg.from.id..':'..msg.to.id..':msg-num'
           local msgs = tonumber(redis:get(hash) or 0)
 
-          if msgs > NUM_MSG_MAX then
+          if msgs > NUM_MSG_MAX and msgs < NUM_MSG_MAX + 3 then
             local receiver = get_receiver(msg)
             local user = msg.from.id
             local text = str2emoji(":exclamation:")..' User '
