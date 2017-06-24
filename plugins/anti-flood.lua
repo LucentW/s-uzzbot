@@ -147,9 +147,11 @@ local function kick_user(user_id, chat_id)
 
           -- Increase the number of messages from the user on the chat
           local hash = 'anti-flood:'..msg.from.id..':'..msg.to.id..':msg-num'
+		  local hash_warned = 'anti-flood:'..msg.from.id..':'..msg.to.id..':msg-num'
           local msgs = tonumber(redis:get(hash) or 0)
+		  local warned = redis:get(hash_warned) or false
 
-          if msgs > NUM_MSG_MAX and msgs < NUM_MSG_MAX + 3 then
+          if msgs > NUM_MSG_MAX and not warned then
             local receiver = get_receiver(msg)
             local user = msg.from.id
             local text = str2emoji(":exclamation:")..' User '
@@ -161,9 +163,7 @@ local function kick_user(user_id, chat_id)
             local chat = msg.to.id
             local hash_exception = 'anti-flood:exception:'..msg.to.id..':'..msg.from.id
 
-            if user == tostring(213673500) then
-              print("Message from relay bot")
-            elseif not is_chat_msg(msg) then
+            if not is_chat_msg(msg) then
               print("Flood in not a chat group!")
               msg = nil
             elseif user == tostring(our_id) then
@@ -195,6 +195,7 @@ local function kick_user(user_id, chat_id)
                 snoop_msg('User '..string.gsub(msg.from.print_name, '_', ' ')..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..real_text)
               end
               send_msg(receiver, text, ok_cb, nil)
+			  redis:set(hash_warned, true)
               if not is_chan_msg(msg) then
                 kick_user(user, chat)
               else
