@@ -1,14 +1,14 @@
 do
 
   function get_last_id()
-    local res,code = https.request("http://xkcd.com/info.0.json")
+    local res,code = https.request("https://xkcd.com/info.0.json")
     if code ~= 200 then return "HTTP ERROR" end
     local data = json:decode(res)
     return data.num
   end
 
   function get_xkcd(id)
-    local res,code = http.request("http://xkcd.com/"..id.."/info.0.json")
+    local res,code = https.request("https://xkcd.com/"..id.."/info.0.json")
     if code ~= 200 then return "HTTP ERROR" end
     local data = json:decode(res)
     local link_image = data.img
