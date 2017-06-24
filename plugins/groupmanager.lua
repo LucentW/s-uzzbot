@@ -4,7 +4,7 @@ do
 
   -- check if user is a bot
   local function is_bot (user)
-    return string.match(user.username, '[Bb][Oo][Tt]$') ~= nil
+    return user.bot or false
   end
 
   local function create_group(msg)
