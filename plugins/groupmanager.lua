@@ -23,7 +23,7 @@ do
     end
     local data_cat = 'description'
     data[tostring(msg.to.id)][data_cat] = deskripsi
-    save_data(_config.moderation.data, data)
+    save_data(_config.moderation.data, data, true)
 
     return 'Set group description to:\n'..deskripsi
   end
@@ -44,7 +44,7 @@ do
     end
     local data_cat = 'rules'
     data[tostring(msg.to.id)][data_cat] = rules
-    save_data(_config.moderation.data, data)
+    save_data(_config.moderation.data, data, true)
 
     return 'Set group rules to:\n'..rules
   end
@@ -70,9 +70,9 @@ do
       return 'Group name is already locked'
     else
       data[tostring(msg.to.id)]['settings']['lock_name'] = 'yes'
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
       data[tostring(msg.to.id)]['settings']['set_name'] = string.gsub(msg.to.print_name, '_', ' ')
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
       return 'Group name has been locked'
     end
   end
@@ -87,7 +87,7 @@ do
       return 'Group name is already unlocked'
     else
       data[tostring(msg.to.id)]['settings']['lock_name'] = 'no'
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
       return 'Group name has been unlocked'
     end
   end
@@ -102,7 +102,7 @@ do
       return 'Group members are already locked'
     else
       data[tostring(msg.to.id)]['settings']['lock_member'] = 'yes'
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
     end
     return 'Group members has been locked'
   end
@@ -116,7 +116,7 @@ do
       return 'Group members are not locked'
     else
       data[tostring(msg.to.id)]['settings']['lock_member'] = 'no'
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
       return 'Group members has been unlocked'
     end
   end
@@ -131,7 +131,7 @@ do
       return 'Group photo is already locked'
     else
       data[tostring(msg.to.id)]['settings']['set_photo'] = 'waiting'
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
     end
     return 'Please send me the group photo now'
   end
@@ -145,13 +145,13 @@ do
       return 'Group photo is not locked'
     else
       data[tostring(msg.to.id)]['settings']['lock_photo'] = 'no'
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
       return 'Group photo has been unlocked'
     end
   end
 
   local function set_group_photo(msg, success, result)
-    local data = load_data(_config.moderation.data)
+    local data = load_data(_config.moderation.data, true)
     local receiver = get_receiver(msg)
     if success then
       local file = 'data/photos/chat_photo_'..msg.to.id..'.jpg'
@@ -164,9 +164,9 @@ do
         channel_set_photo (receiver, file, ok_cb, false)
       end
       data[tostring(msg.to.id)]['settings']['set_photo'] = file
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
       data[tostring(msg.to.id)]['settings']['lock_photo'] = 'yes'
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
       send_large_msg(receiver, 'Photo saved!', ok_cb, false)
     else
       print('Error downloading: '..msg.id)
@@ -184,7 +184,7 @@ do
       return 'Group bots are already locked'
     else
       data[tostring(msg.to.id)]['settings']['lock_bots'] = 'yes'
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
     end
     return 'Group bots locked'
   end
@@ -198,7 +198,7 @@ do
       return 'Group bots is not locked'
     else
       data[tostring(msg.to.id)]['settings']['lock_bots'] = 'no'
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
       return 'Group bots unlocked'
     end
   end
@@ -222,7 +222,7 @@ do
     if not is_chat_msg(msg) then
       return "This is not a group chat."
     end
-    local data = load_data(_config.moderation.data)
+    local data = load_data(_config.moderation.data, true)
     local receiver = get_receiver(msg)
     if msg.media and is_chat_msg(msg) and is_momod(msg) then
       if msg.media.type == 'photo' and data[tostring(msg.to.id)] then
@@ -305,7 +305,7 @@ do
       if matches[1] == 'setname' and is_momod(msg) then
         local new_name = string.gsub(matches[2], '_', ' ')
         data[tostring(msg.to.id)]['settings']['set_name'] = new_name
-        save_data(_config.moderation.data, data)
+        save_data(_config.moderation.data, data, true)
         local group_name_set = data[tostring(msg.to.id)]['settings']['set_name']
         local to_rename
         if not is_chan_msg(msg) then
@@ -318,7 +318,7 @@ do
       end
       if matches[1] == 'setphoto' and is_momod(msg) then
         data[tostring(msg.to.id)]['settings']['set_photo'] = 'waiting'
-        save_data(_config.moderation.data, data)
+        save_data(_config.moderation.data, data, true)
         return 'Please send me new group photo now'
       end
       if matches[1] == 'chat_add_user' or matches[1] == 'chat_add_user_link' then

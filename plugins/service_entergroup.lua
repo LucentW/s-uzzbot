@@ -46,7 +46,7 @@ function chat_new_user(msg)
 end
 
 local function description_rules(msg, nama)
-  local data = load_data(_config.moderation.data)
+  local data = load_data(_config.moderation.data, true)
   if data[tostring(msg.to.id)] then
     local about = ""
     local rules = ""

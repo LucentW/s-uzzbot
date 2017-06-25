@@ -27,14 +27,14 @@ do
             lock_bots = 'no'
           }
         }
-        save_data(_config.moderation.data, data)
+        save_data(_config.moderation.data, data, true)
         return send_large_msg(receiver, 'You have been promoted as moderator for this group.')
       end
     end
   end
 
   local function automodadd(msg)
-    local data = load_data(_config.moderation.data)
+    local data = load_data(_config.moderation.data, true)
     if msg.action.type == 'chat_created' then
       receiver = get_receiver(msg)
       chat_info(receiver, check_member,{receiver=receiver, data=data, msg = msg})
@@ -58,7 +58,7 @@ do
           lock_bots = 'no'
         }
       }
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
       return 'Group has been added, and @'..username..' has been promoted as moderator for this group.'
     end
   end
@@ -68,7 +68,7 @@ do
     -- if not is_admin(msg) then
     -- return "You're not admin"
     -- end
-    local data = load_data(_config.moderation.data)
+    local data = load_data(_config.moderation.data, true)
     if data[tostring(msg.to.id)] then
       return 'Group is already added.'
     end
@@ -83,7 +83,7 @@ do
         lock_bots = 'no'
       }
     }
-    save_data(_config.moderation.data, data)
+    save_data(_config.moderation.data, data, true)
 
     return 'Group has been added.'
   end
@@ -93,20 +93,20 @@ do
     if not is_admin(msg) then
       return "You're not admin"
     end
-    local data = load_data(_config.moderation.data)
+    local data = load_data(_config.moderation.data, true)
     local receiver = get_receiver(msg)
     if not data[tostring(msg.to.id)] then
       return 'Group is not added.'
     end
 
     data[tostring(msg.to.id)] = nil
-    save_data(_config.moderation.data, data)
+    save_data(_config.moderation.data, data, true)
 
     return 'Group has been removed'
   end
 
   local function promote(receiver, member_username, member_id)
-    local data = load_data(_config.moderation.data)
+    local data = load_data(_config.moderation.data, true)
     local group = string.gsub(receiver, 'chat#id', '')
     group = string.gsub(group, 'channel#id', '')
     if not data[group] then
@@ -116,12 +116,12 @@ do
       return send_large_msg(receiver, member_username..' is already a moderator.')
     end
     data[group]['moderators'][tostring(member_id)] = member_username
-    save_data(_config.moderation.data, data)
+    save_data(_config.moderation.data, data, true)
     return send_large_msg(receiver, '@'..member_username..' has been promoted.')
   end
 
   local function demote(receiver, member_username, member_id)
-    local data = load_data(_config.moderation.data)
+    local data = load_data(_config.moderation.data, true)
     local group = string.gsub(receiver, 'chat#id', '')
     group = string.gsub(group, 'channel#id', '')
     if not data[group] then
@@ -131,7 +131,7 @@ do
       return send_large_msg(receiver, member_username..' is not a moderator.')
     end
     data[group]['moderators'][tostring(member_id)] = nil
-    save_data(_config.moderation.data, data)
+    save_data(_config.moderation.data, data, true)
     return send_large_msg(receiver, '@'..member_username..' has been demoted.')
   end
 
@@ -152,10 +152,10 @@ do
   end
 
   local function admin_promote(receiver, member_username, member_id)
-    local data = load_data(_config.moderation.data)
+    local data = load_data(_config.moderation.data, true)
     if not data['admins'] then
       data['admins'] = {}
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
     end
 
     if data['admins'][tostring(member_id)] then
@@ -163,15 +163,15 @@ do
     end
 
     data['admins'][tostring(member_id)] = member_username
-    save_data(_config.moderation.data, data)
+    save_data(_config.moderation.data, data, true)
     return send_large_msg(receiver, '@'..member_username..' has been promoted as admin.')
   end
 
   local function admin_demote(receiver, member_username, member_id)
-    local data = load_data(_config.moderation.data)
+    local data = load_data(_config.moderation.data, true)
     if not data['admins'] then
       data['admins'] = {}
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
     end
 
     if not data['admins'][tostring(member_id)] then
@@ -179,16 +179,16 @@ do
     end
 
     data['admins'][tostring(member_id)] = nil
-    save_data(_config.moderation.data, data)
+    save_data(_config.moderation.data, data, true)
 
     return send_large_msg(receiver, 'Admin '..member_username..' has been demoted.')
   end
 
   local function blocklistadm_promote(receiver, member_username, member_id)
-    local data = load_data(_config.moderation.data)
+    local data = load_data(_config.moderation.data, true)
     if not data['blocklist'] then
       data['blocklist'] = {}
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
     end
 
     if data['blocklist'][tostring(member_id)] then
@@ -196,15 +196,15 @@ do
     end
 
     data['blocklist'][tostring(member_id)] = member_username
-    save_data(_config.moderation.data, data)
+    save_data(_config.moderation.data, data, true)
     return send_large_msg(receiver, '@'..member_username..' has been promoted as blocklist admin.')
   end
 
   local function blocklistadm_demote(receiver, member_username, member_id)
-    local data = load_data(_config.moderation.data)
+    local data = load_data(_config.moderation.data, true)
     if not data['blocklist'] then
       data['blocklist'] = {}
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
     end
 
     if not data['blocklist'][tostring(member_id)] then
@@ -212,7 +212,7 @@ do
     end
 
     data['blocklist'][tostring(member_id)] = nil
-    save_data(_config.moderation.data, data)
+    save_data(_config.moderation.data, data, true)
 
     return send_large_msg(receiver, 'Blocklist admin '..member_username..' has been demoted.')
   end
@@ -308,7 +308,7 @@ do
   end
 
   local function modlist(msg)
-    local data = load_data(_config.moderation.data)
+    local data = load_data(_config.moderation.data, true)
     if not data[tostring(msg.to.id)] then
       return 'Group is not added.'
     end
@@ -325,10 +325,10 @@ do
   end
 
   local function admin_list(msg)
-    local data = load_data(_config.moderation.data)
+    local data = load_data(_config.moderation.data, true)
     if not data['admins'] then
       data['admins'] = {}
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
     end
     if next(data['admins']) == nil then --fix way
       return 'No admin available.'
@@ -341,10 +341,10 @@ do
   end
 
   local function blocklistadm_list(msg)
-    local data = load_data(_config.moderation.data)
+    local data = load_data(_config.moderation.data, true)
     if not data['blocklist'] then
       data['blocklist'] = {}
-      save_data(_config.moderation.data, data)
+      save_data(_config.moderation.data, data, true)
     end
     if next(data['blocklist']) == nil then --fix way
       return 'No blocklist admin available.'
