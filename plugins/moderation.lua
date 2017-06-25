@@ -216,6 +216,27 @@ do
 
     return send_large_msg(receiver, 'Blocklist admin '..member_username..' has been demoted.')
   end
+  
+  local function syncmods(cb_extra, success, result)
+    local receiver = cb_extra
+
+    local data = load_data(_config.moderation.data)
+    local group = string.gsub(receiver, 'chat#id', '')
+    group = string.gsub(group, 'channel#id', '')
+    if not data[group] then
+      return send_large_msg(receiver, 'Group is not added.')
+    end
+    data[group]['moderators'] = {}
+    
+    for _,cur_user in pairs(result) do
+      if cur_user.peer_id ~= our_id then
+        data[group]['moderators'][tostring(cur_user.peer_id)] = cur_user.username
+      end
+    end
+    save_data(_config.moderation.data, data)
+    
+    send_large_msg(receiver, "Moderators synced successfully.")
+  end
 
   local function resolved_username(cb_extra, success, result)
     local mod_cmd = cb_extra.mod_cmd
@@ -350,6 +371,20 @@ do
     if matches[1] == 'modrem' then
       return modrem(msg)
     end
+    if matches[1] == 'modsync' then
+      if is_chan_msg(msg) then
+        local data = load_data(_config.moderation.data)
+        local receiver = get_receiver(msg)
+
+        if not data[tostring(msg.to.id)] then
+          modadd(msg)
+        end
+
+        return channel_get_admins(receiver, syncmods, receiver)
+      else
+        return "Works only on supergroups!"
+      end
+    end
     if matches[1] == 'promote' then -- and matches[2] then
       if not is_momod(msg) then
         return "Only moderator can promote"
@@ -471,6 +506,7 @@ do
         "#promote (by reply) : Promote user as moderator",
         "#demote (by reply) : Demote user from moderator",
         "!modlist : List of moderators",
+        "!modsync : Sync moderators with supergroup admins",
       },
       admin = {
         "!modadd : Add group to moderation list",
@@ -491,6 +527,7 @@ do
       "^!(promote) (.*)$",
       "^!(demote) (.*)$",
       "^!(modlist)$",
+      "^!(modsync)$",
       "^!(adminprom) (.*)$", -- sudoers only
       "^!(admindem) (.*)$", -- sudoers only
       "^!(blocklistprom) (.*)$", -- sudoers only
