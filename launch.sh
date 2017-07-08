@@ -6,6 +6,9 @@ cd $THIS_DIR
 update() {
   git pull
   git submodule update --init --recursive
+  cd Madeline_lua_shim
+  composer update
+  cd ..
   install_rocks
 }
 
@@ -155,5 +158,5 @@ else
   fi
 
   php madeline.php
-  
+
 fi
