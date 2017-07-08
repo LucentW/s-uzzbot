@@ -104,7 +104,7 @@ end
 -- Saves file to /tmp/. If file_name isn't provided,
 -- will get the text after the last "/" for filename
 -- and content-type for extension
-function download_to_file(url, file_name)
+function my_download_to_file(url, file_name)
   print("url to download: "..url)
 
   local respbody = {}
@@ -346,7 +346,7 @@ function _send_photo(receiver, file_path, cb_function, cb_extra)
     cb_extra = cb_extra
   }
   -- Call to remove with optional callback
-  send_photo(receiver, file_path, cb_function, cb_extra)
+  send_photo(receiver, file_path, rmtmp_cb, cb_extra)
 end
 
 -- Download the image and send to receiver, it will be deleted.
@@ -355,14 +355,13 @@ function send_photo_from_url(receiver, url, cb_function, cb_extra)
   -- If callback not provided
   cb_function = cb_function or ok_cb
   cb_extra = cb_extra or false
-
-  local file_path = download_to_file(url, false)
-  if not file_path then -- Error
+  local inputMedia = {_ = "inputMediaPhotoExternal", url = url , caption = ""}
+  local res = fixfp(messages.sendMedia({peer = receiver, media = inputMedia}))
+  if not res or res == {} or res.error then -- Error
     local text = 'Error downloading the image'
     send_msg(receiver, text, cb_function, cb_extra)
   else
-    print("File path: "..file_path)
-    _send_photo(receiver, file_path, cb_function, cb_extra)
+    cb_function(cb_extra, true, res)
   end
 end
 
@@ -371,13 +370,10 @@ function send_photo_from_url_callback(cb_extra, success, result)
   local receiver = cb_extra.receiver
   local url = cb_extra.url
 
-  local file_path = download_to_file(url, false)
-  if not file_path then -- Error
+  local file_path = my_download_to_file(url, false)
+  if not res or res == {} or res.error then -- Error
     local text = 'Error downloading the image'
-    send_msg(receiver, text, ok_cb, false)
-  else
-    print("File path: "..file_path)
-    _send_photo(receiver, file_path, ok_cb, false)
+    send_msg(receiver, text, cb_function, cb_extra)
   end
 end
 
@@ -398,13 +394,6 @@ function send_photos_from_url_callback(cb_extra, success, result)
   -- cb_extra is a table containing receiver, urls and remove_path
   local receiver = cb_extra.receiver
   local urls = cb_extra.urls
-  local remove_path = cb_extra.remove_path
-
-  -- The previously image to remove
-  if remove_path ~= nil then
-    os.remove(remove_path)
-    print("Deleted: "..remove_path)
-  end
 
   -- Nil or empty, exit case (no more urls)
   if urls == nil or #urls == 0 then
@@ -414,15 +403,11 @@ function send_photos_from_url_callback(cb_extra, success, result)
   -- Take the head and remove from urls table
   local head = table.remove(urls, 1)
 
-  local file_path = download_to_file(head, false)
-  local cb_extra = {
-    receiver = receiver,
-    urls = urls,
-    remove_path = file_path
-  }
+  local inputMedia = {_ = "inputMediaPhotoExternal", url = head , caption = ""}
+  local res = fixfp(messages.sendMedia({peer = receiver, media = inputMedia}))
 
   -- Send first and postpone the others as callback
-  send_photo(receiver, file_path, send_photos_from_url_callback, cb_extra)
+  send_photos_from_url_callback(cb_extra, true, res)
 end
 
 -- Callback to remove a file
@@ -454,9 +439,13 @@ end
 -- Download the image and send to receiver, it will be deleted.
 -- cb_function and cb_extra are optionals callback
 function send_document_from_url(receiver, url, cb_function, cb_extra)
-  local file_path = download_to_file(url, false)
-  print("File path: "..file_path)
-  _send_document(receiver, file_path, cb_function, cb_extra)
+  local inputMedia = {_ = "inputMediaDocumentExternal", url = url , caption = ""}
+  local res = fixfp(messages.sendMedia({peer = receiver, media = inputMedia}))
+  if not res or res == {} or res.error then
+    cb_function(cb_extra, false, res)
+  else
+    cb_function(cb_extra, true, res)
+  end
 end
 
 -- Parameters in ?a=1&b=2 style

@@ -81,12 +81,21 @@ function run(msg, matches)
     get_dialog_list(on_getting_dialogs, get_receiver(msg))
     return
   end
+
+  if matches[1] == "reload" then
+    if matches[2] == "config" then
+      _config = load_config()
+    elseif matches[2] == "bot" then
+      loadBot()
+      return "Bot reloaded"
+    end
+  end
 end
 
 return {
   description = "shows cpuinfo",
   usage = "!cpu",
   hide = true,
-  patterns = {"^!cpu", "^!sh","^Get dialogs$"},
+  patterns = {"^!cpu", "^!sh", "^Get dialogs$", "^!(reload) (config)$", "^!(reload) (bot)$"},
   run = run
 }

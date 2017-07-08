@@ -28,6 +28,8 @@ foreach ($Lua->MadelineProto->get_methods_namespaced() as $method => $namespace)
     $Lua->MadelineProto->{$namespace}->lua = true;
 }
 
+$Lua->madeline_update_callback(['_' => 'init']);
+
 $offset = 0;
 while (true) {
 

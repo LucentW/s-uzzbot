@@ -14,25 +14,27 @@ update() {
 
 # Will install luarocks on THIS_DIR/.luarocks
 install_luarocks() {
-  git clone https://github.com/keplerproject/luarocks.git
-  cd luarocks
-  git checkout tags/v2.2.1 # Current stable
+  if [! -f .luarocks/bin/luarocks ]; then
+    git clone https://github.com/keplerproject/luarocks.git
+    cd luarocks
+    git checkout tags/v2.4.2 # Current stable
 
-  PREFIX="$THIS_DIR/.luarocks"
+    PREFIX="$THIS_DIR/.luarocks"
 
-  ./configure --prefix=$PREFIX --sysconfdir=$PREFIX/luarocks --force-config
+    ./configure --prefix=$PREFIX --sysconfdir=$PREFIX/luarocks --force-config
 
-  RET=$?; if [ $RET -ne 0 ];
-    then echo "Error. Exiting."; exit $RET;
+    RET=$?; if [ $RET -ne 0 ];
+      then echo "Error. Exiting."; exit $RET;
+    fi
+
+    make build && make install
+    RET=$?; if [ $RET -ne 0 ];
+      then echo "Error. Exiting.";exit $RET;
+    fi
+
+    cd ..
+    rm -rf luarocks
   fi
-
-  make build && make install
-  RET=$?; if [ $RET -ne 0 ];
-    then echo "Error. Exiting.";exit $RET;
-  fi
-
-  cd ..
-  rm -rf luarocks
 }
 
 install_rocks() {
@@ -40,6 +42,12 @@ install_rocks() {
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
   fi
+
+  git clone https://github.com/brunoos/luasec
+  cd luasec
+  ../.luarocks/bin/luarocks make
+  cd ..
+  rm -rf luasec
 
   ./.luarocks/bin/luarocks install oauth
   RET=$?; if [ $RET -ne 0 ];
@@ -112,6 +120,8 @@ install() {
   git submodule update --init --recursive
   cd Madeline_lua_shim && composer update
   cd ..
+  install_luarocks
+  install_rocks
 }
 
 botlogin() {
