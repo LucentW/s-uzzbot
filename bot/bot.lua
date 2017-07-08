@@ -23,6 +23,7 @@ function on_msg_receive (msg)
 
   -- vardump(msg)
   msg = pre_process_service_msg(msg)
+  
   if msg_valid(msg) then
     msg = pre_process_msg(msg)
     if msg then
@@ -71,7 +72,7 @@ function msg_valid(msg)
   end
 
   if msg.unread == 0 then
-    print('\27[36mNot valid: readed\27[39m')
+    print('\27[36mNot valid: read\27[39m')
     return false
   end
 
@@ -301,6 +302,10 @@ end
 
 function on_chat_update (chat, what)
   --vardump (chat)
+end
+
+function on_channel_update (channel, what)
+  --vardump (channel)
 end
 
 function on_secret_chat_update (schat, what)

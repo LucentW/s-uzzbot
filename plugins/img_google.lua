@@ -19,8 +19,10 @@ do
     local function get_google_data(text)
       local url = "http://ajax.googleapis.com/ajax/services/search/images?"
       url = url.."v=1.0&rsz=5"
-      url = url.."&q="..URL.escape(text)
-      url = url.."&imgsz=small|medium|large"
+
+      -- The blocks of code are arranged in this specific way to make URL
+      -- building easier.
+
       if google_config.api_keys then
         local i = math.random(#google_config.api_keys)
         local api_key = google_config.api_keys[i]
@@ -28,6 +30,15 @@ do
           url = url.."&key="..api_key
         end
       end
+
+      -- Use "off" to disable Safe Search, "moderate" for the default level,
+      -- "active" for strict filtering
+      if google_config.safe then
+        url = url.."&safe="..google_config.safe
+      end
+
+      url = url.."&q="..URL.escape(text)
+      url = url.."&imgsz=small|medium|large"
 
       local res, code = http.request(url)
 
