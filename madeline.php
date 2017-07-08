@@ -13,7 +13,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 //See https://github.com/danog/MadelineProto/blob/master/lua/madeline.php
 
-require 'vendor/autoload.php';
+require 'Madeline_lua_shim/vendor/autoload.php';
 $settings = ['app_info' => ['api_id' => 6, 'api_hash' => 'eb06d4abfb49dc3eeb1aeb98ae0f581e'], 'logger' => ['loglevel' => \danog\MadelineProto\Logger::ERROR]];
 $Lua = false;
 
@@ -31,7 +31,7 @@ foreach ($Lua->MadelineProto->get_methods_namespaced() as $method => $namespace)
 $offset = 0;
 while (true) {
 
-    $updates = $Lua->MadelineProto->API->get_updates(['offset' => $offset, 'limit' => 50, 'timeout' => 0])
+    $updates = $Lua->MadelineProto->API->get_updates(['offset' => $offset, 'limit' => 50, 'timeout' => 0]);
 
     foreach ($updates as $update) {
         $offset = $update['update_id'] + 1;

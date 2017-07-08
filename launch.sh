@@ -137,7 +137,7 @@ if [ "$1" = "install" ]; then
   install
 elif [ "$1" = "update" ]; then
   update
-elif [ "$1" = "login"]; then
+elif [ "$1" = "login" ]; then
   login
 elif [ "$1" = "botlogin" ]; then
   botlogin
@@ -153,4 +153,7 @@ else
     echo "Run $0 login or $0 botlogin"
     exit 1
   fi
+
+  php madeline.php
+  
 fi
