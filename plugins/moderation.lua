@@ -216,7 +216,7 @@ do
 
     return send_large_msg(receiver, 'Blocklist admin '..member_username..' has been demoted.')
   end
-  
+
   local function syncmods(cb_extra, success, result)
     local receiver = cb_extra
 
@@ -227,14 +227,14 @@ do
       return send_large_msg(receiver, 'Group is not added.')
     end
     data[group]['moderators'] = {}
-    
+
     for _,cur_user in pairs(result) do
       if cur_user.peer_id ~= our_id then
         data[group]['moderators'][tostring(cur_user.peer_id)] = cur_user.username
       end
     end
     save_data(_config.moderation.data, data)
-    
+
     send_large_msg(receiver, "Moderators synced successfully.")
   end
 
@@ -489,8 +489,15 @@ do
       end
       return blocklistadm_list(msg)
     end
-    if matches[1] == 'chat_add_user' and msg.action.user.id == our_id then
-      return automodadd(msg)
+    if matches[1] == 'chat_add_user' then
+      print("Check for automodadd")
+      for _, user in ipairs(msg.action.users) do
+        print("The for is working")
+        if user.id == our_id then
+          print("Hello, it's me")
+          return automodadd(msg)
+        end
+      end
     end
     if matches[1] == 'chat_created' and msg.from.id == 0 then
       return automodadd(msg)

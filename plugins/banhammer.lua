@@ -195,19 +195,34 @@ local function is_blocklisted(user_id, chat_id)
   return blocklisted and is_chat_blocklist_ok
 end
 
+local function check_ban_all(chat, users, is_chan)
+  for _, user in ipairs(users) do
+    print('Checking invited user '..user_id)
+    local user_id = user.id
+    local superbanned = is_super_banned2(user_id, chat)
+    local banned = is_banned(user_id, chat)
+    local blocklisted = is_blocklisted(user_id, chat)
+    if superbanned or banned or blocklisted then
+      print('User is banned!')
+      if not is_chan_msg(msg) then
+        kick_user(user_id, chat, "chat#id" .. chat)
+      else
+        kick_chan_user(user_id, chat, "channel#id" .. chat)
+      end
+    end
+  end
+end
+
 local function pre_process(msg)
 
   -- SERVICE MESSAGE
   if msg.action and msg.action.type then
     local action = msg.action.type
     -- Check if banned user joins chat
-    if action == 'chat_add_user' or action == 'chat_add_user_link' then
-      local user_id
-      if msg.action.link_issuer then
-        user_id = msg.from.id
-      else
-        user_id = msg.action.user.id
-      end
+    if action == 'chat_add_user' then
+      check_ban_all(msg.to.id, users, is_chan_msg(msg))
+    elseif action == 'chat_add_user_link' then
+      local user_id = msg.from.id
       print('Checking invited user '..user_id)
       local superbanned = is_super_banned2(user_id, msg.to.id)
       local banned = is_banned(user_id, msg.to.id)
@@ -479,12 +494,12 @@ local function run(msg, matches)
         return str2emoji(':information_source:')..' Superbans are now enforced on group '..string.gsub(msg.to.print_name, '_', ' ')..' ['..msg.to.id..'].'
       end
     end
-    
+
 --Only admin can superban
     if not is_admin(msg) then
       return nil
     end
---Superban via reply    
+--Superban via reply
     if msg.reply_id then
       get_message(msg.reply_id, superban_by_reply, {is_chan=is_chan_msg(msg),receiver=get_receiver(msg)})
       return nil
@@ -542,7 +557,7 @@ local function run(msg, matches)
         resolve_username(member, resolved_username, {get_cmd=get_cmd, receiver=receiver, chat_id=chat_id, member=member, is_chan=is_chan_msg(msg)})
       end
     end
-    
+
     --Enable/Disable Blocklist in chat
     if matches[2] == 'enable' then
       local hash = 'blocklistok:'..msg.to.id
@@ -635,7 +650,7 @@ local function run(msg, matches)
       redis:del(hash)
       return str2emoji(':information_source:')..' Chat '..msg.to.print_name..' ['..msg.to.id..'] removed from whitelist'
     end
-    
+
     --Enable/Disable modonly
     if matches[2] == 'modonly' and matches[3] == 'enable' and is_momod(msg) then
       local hash = 'whitelist:modonly:'..msg.to.id

@@ -107,42 +107,50 @@ install_rocks() {
 install() {
   git pull
   git submodule update --init --recursive
-  cd tg && ./configure && make
-
-  RET=$?; if [ $RET -ne 0 ]; then
-    echo "Trying without Python...";
-    ./configure --disable-python && make
-    RET=$?
-  fi
-
-  if [ $RET -ne 0 ]; then
-    echo "Error. Exiting."; exit $RET;
-  fi
+  cd Madeline_lua_shim && composer update
   cd ..
-  install_luarocks
-  install_rocks
+}
+
+botlogin() {
+  if [ ! -f ./Madeline_lua_shim/vendor/autoload.php ]; then
+    echo "MadelineProto not found, installing..."
+    install
+  fi
+  cd Madeline_lua_shim
+  php botlogin.php
+  cp bot.madeline ../bot.madeline
+  cd ..
+}
+
+login() {
+  if [ ! -f ./Madeline_lua_shim/vendor/autoload.php ]; then
+    echo "MadelineProto not found, installing..."
+    install
+  fi
+  cd Madeline_lua_shim
+  php userlogin.php
+  cp bot.madeline ../bot.madeline
+  cd ..
 }
 
 if [ "$1" = "install" ]; then
   install
 elif [ "$1" = "update" ]; then
   update
+elif [ "$1" = "login"]; then
+  login
+elif [ "$1" = "botlogin" ]; then
+  botlogin
 else
-  if [ ! -f ./tg/telegram.h ]; then
-    echo "tg not found"
+  if [ ! -f ./Madeline_lua_shim/vendor/autoload.php ]; then
+    echo "MadelineProto not found"
     echo "Run $0 install"
     exit 1
   fi
 
-  if [ ! -f ./tg/bin/telegram-cli ]; then
-    echo "tg binary not found"
-    echo "Run $0 install"
+  if [ ! -e "bot.madeline" ]; then
+    echo "Login file not found"
+    echo "Run $0 login or $0 botlogin"
     exit 1
-  fi
-
-  if [ ! -e "bot_mode" ]; then
-    ./tg/bin/telegram-cli -k ./tg/tg-server.pub -s ./bot/bot.lua -l 1 -E
-  else
-    ./tg/bin/telegram-cli -k ./tg/tg-server.pub -s ./bot/bot.lua -l 1 -E -b
   fi
 fi
