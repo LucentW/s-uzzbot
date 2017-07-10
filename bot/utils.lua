@@ -13,7 +13,7 @@ JSON = (loadfile "./libs/dkjson.lua")()
 http.TIMEOUT = 10
 
 -- insert snoop group ID
-local LOG_ID = 0
+local LOG_ID = "chat#id0"
 
 function get_receiver(msg)
   if msg.to.type == 'user' then
@@ -570,7 +570,7 @@ end
 -- Log to group
 function snoop_msg(text)
   local cb_extra = {
-    destination = "user#id68972553",
+    destination = LOG_ID,
     text = text
   }
   send_large_msg_callback(cb_extra, true)
