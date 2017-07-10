@@ -251,7 +251,7 @@ do
       members = result
     end
 
-    if success == 1 then
+    if success then
       member_username = result.username
       member_id = result.peer_id
       if mod_cmd == 'promote' then
@@ -490,11 +490,8 @@ do
       return blocklistadm_list(msg)
     end
     if matches[1] == 'chat_add_user' then
-      print("Check for automodadd")
       for _, user in ipairs(msg.action.users) do
-        print("The for is working")
         if user.id == our_id then
-          print("Hello, it's me")
           return automodadd(msg)
         end
       end

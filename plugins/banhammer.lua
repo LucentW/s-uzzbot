@@ -182,9 +182,11 @@ end
 local function is_super_banned2(user_id, chat_id)
   local hash = 'superbanned:'..user_id
   local hashexc = 'superbanexc:'..chat_id
+  local hashuserexc = 'superbanexc:' .. chat_id .. ':' .. user_id
   local superbanned = redis:get(hash)
   local superbanexc = redis:get(hashexc)
-  return superbanned and not superbanexc
+  local superbanuserexc = redis:get(hashuserexc)
+  return superbanned and not superbanexc and not superbanuserexc
 end
 
 local function is_blocklisted(user_id, chat_id)
@@ -197,8 +199,8 @@ end
 
 local function check_ban_all(chat, users, is_chan)
   for _, user in ipairs(users) do
-    print('Checking invited user '..user_id)
     local user_id = user.id
+    print('Checking invited user '..user_id)
     local superbanned = is_super_banned2(user_id, chat)
     local banned = is_banned(user_id, chat)
     local blocklisted = is_blocklisted(user_id, chat)
@@ -213,6 +215,27 @@ local function check_ban_all(chat, users, is_chan)
   end
 end
 
+local function check_unban_all(chat, users, is_chan)
+  local txt = ""
+  for _, user in ipairs(users) do
+    local user_id = user.id
+    if is_banned(user_id, chat) then
+      redis:del("banned:"..chat..":"..user_id)
+      txt = txt .. "User " .. user_print_name(user) .. " [" .. user_id .."] unbanned because added by a mod\n"
+    end
+
+    if is_super_banned2(user_id, chat) then
+      redis:set("superbanexc:" .. chat .. ":" .. user_id)
+      txt = txt .. "User " .. user_print_name(user) .. " [" .. user_id .."] added to superban whitelist because added by a mod\n"
+    end
+  end
+
+  if txt then
+    local chat_id = is_chan and "channe#id" .. chat or "chat#id" .. chat
+    send_large_msg(chat_id, txt)
+  end
+end
+
 local function pre_process(msg)
 
   -- SERVICE MESSAGE
@@ -220,7 +243,11 @@ local function pre_process(msg)
     local action = msg.action.type
     -- Check if banned user joins chat
     if action == 'chat_add_user' then
-      check_ban_all(msg.to.id, users, is_chan_msg(msg))
+      if is_mod(msg.from.id, msg.to.id) then
+        check_unban_all(msg.to.id, msg.action.users, is_chan_msg(msg))
+      else
+        check_ban_all(msg.to.id, msg.action.users, is_chan_msg(msg))
+      end
     elseif action == 'chat_add_user_link' then
       local user_id = msg.from.id
       print('Checking invited user '..user_id)
@@ -297,7 +324,7 @@ local function resolved_username(cb_extra, success, result)
   local is_chan = cb_extra.is_chan
   local text = str2emoji(':exclamation:')..' User @'..member..' does not exist.'
 
-  if success == 1 then
+  if success then
     if result.username then member = result.username end
     member_id = result.peer_id
     if get_cmd == 'kick' then
@@ -366,6 +393,15 @@ local function resolved_username(cb_extra, success, result)
         else
           return nil
         end
+      end
+    elseif get_cmd == 'superban whitelist' then
+      local hash = 'superbanexc:' .. chat_id .. ':' .. member_id
+      if redis:get(hash) then
+        redis:del(hash)
+        return send_large_msg(receiver, str2emoji(':information_source:')..' User  '..user_print_name(result)..' ['..member_id..'] is no more whitelisted for the superban.')
+      else
+        redis:set(hash, true)
+        return send_large_msg(receiver, str2emoji(':information_source:')..' User  '..user_print_name(result)..' ['..member_id..'] is now whitelisted for the superban.')
       end
     elseif get_cmd == 'blocklist delete' then
       local hash = 'blocklist:' .. member_id
@@ -492,6 +528,23 @@ local function run(msg, matches)
         local hash = 'superbanexc:'..msg.to.id
         redis:del(hash)
         return str2emoji(':information_source:')..' Superbans are now enforced on group '..string.gsub(msg.to.print_name, '_', ' ')..' ['..msg.to.id..'].'
+      end
+    end
+
+    if matches[2] == 'whitelist' then
+      local hash = 'superbanexc:' .. msg.to.id .. ':'
+      if string.match(matches[3], '^%d+$') then
+        hash = hash .. matches[3]
+        if redis:get(hash) then
+          redis:del(hash)
+          return str2emoji(':information_source:')..' User  '..user_print_name(msg.from)..' ['..msg.from.id..'] is no more whitelisted for the superban.'
+        else
+          redis:set(hash, true)
+          return str2emoji(':information_source:')..' User  '..user_print_name(msg.from)..' ['..msg.from.id..'] is now whitelisted for the superban.'
+        end
+      else
+        local member = string.gsub(matches[3], '@', '')
+        resolve_username(member, resolved_username, {get_cmd=get_cmd, receiver=receiver, chat_id=chat_id, member=member, is_chan=is_chan_msg(msg)})
       end
     end
 
@@ -686,6 +739,7 @@ return {
       '!ban delete <user_id> : Unban user',
       '!ban delete <username> : Unban user',
       '!superban <enable>/<disable> : Enable or disable global bans on the current group',
+      '!superban whitelist <user_id>/<username> : Toggle user from local superban whitelist',
       '!kick <user_id> : Kick user from chat group by id',
       '!kick <username> : Kick user from chat group by username',
       '#ban (by reply) : Kick user from chat and kicks it if joins chat again',
@@ -726,6 +780,7 @@ return {
     '^!(superban) (disable)$',
     '^!(superban) (user) (.*)$',
     '^!(superban) (delete) (.*)$',
+    '^!(superban) (whitelist) (.*)$',
     '^!(blocklist) (user) (.*)$',
     '^!(blocklist) (delete) (.*)$',
     '^!(blocklist) (enable)$',

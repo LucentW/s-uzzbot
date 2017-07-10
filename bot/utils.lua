@@ -47,6 +47,20 @@ function is_chan_msg( msg )
   return false
 end
 
+function user_print_name(user)
+  local text = ''
+  if user.first_name then
+    text = user.first_name..' '
+  end
+  if user.last_name then
+    text = text..user.last_name
+  end
+  if user.title then
+    text = user.title
+  end
+  return text or user.print_name:gsub('_', ' ')
+end
+
 function string.random(length)
   local str = "";
   for i = 1, length do
@@ -166,104 +180,102 @@ end
 
 -- User has superuser privileges
 function is_sudo(msg)
-  local var = false
   -- Check users id in config
   for v,user in pairs(_config.sudo_users) do
     if user == msg.from.id then
-      var = true
+      return true
     end
   end
-  return var
+  return false
 end
 
 -- user has admins privileges
 function is_admin(msg)
-  local var = false
   local data = load_data(_config.moderation.data)
   local user = msg.from.id
   local admins = 'admins'
   if data[tostring(admins)] then
     if data[tostring(admins)][tostring(user)] then
-      var = true
+      return true
     end
   end
   for v,user in pairs(_config.sudo_users) do
     if user == msg.from.id then
-      var = true
+      return true
     end
   end
-  return var
+  return false
 end
 
 -- user has blocklist adding privileges
 function is_blocklistadm(msg)
-  local var = false
   local data = load_data(_config.moderation.data)
   local user = msg.from.id
   local blocklist = 'blocklist'
   if data[tostring(blocklist)] then
     if data[tostring(blocklist)][tostring(user)] then
-      var = true
+      return true
     end
   end
   for v,user in pairs(_config.sudo_users) do
     if user == msg.from.id then
-      var = true
+      return true
     end
   end
-  return var
+  return false
 end
 
 -- user has moderator privileges
 function is_momod(msg)
-  local var = false
   local data = load_data(_config.moderation.data)
   local user = msg.from.id
   if data[tostring(msg.to.id)] then
     if data[tostring(msg.to.id)]['moderators'] then
       if data[tostring(msg.to.id)]['moderators'][tostring(user)] then
-        var = true
+        return true
       end
     end
   end
   if data['admins'] then
     if data['admins'][tostring(user)] then
-      var = true
+      return true
     end
   end
   for v,user in pairs(_config.sudo_users) do
     if user == msg.from.id then
-      var = true
+      return true
     end
   end
-  return var
+  if user == our_id then
+    return true
+  end
+  return false
 end
 
 -- check whether user is mod, admin or sudo
 function is_mod(user_id, chat_id)
-  local var = false
   local data = load_data(_config.moderation.data)
   if data[tostring(chat_id)] then
     if data[tostring(chat_id)]['moderators'] then
       if data[tostring(chat_id)]['moderators'][tostring(user_id)] then
-        var = true
+        return true
       end
     end
   end
   if data['admins'] then
     if data['admins'][tostring(user_id)] then
-      var = true
+      return true
     end
   end
   for v,user in pairs(_config.sudo_users) do
     if user == user_id then
-      var = true
+      return true
     end
   end
-  if user == our_id then
-    var = true
+  if user_id == our_id then
+    return true
   end
-  return var
+  return false
 end
 
 -- Returns the name of the sender
@@ -558,7 +570,7 @@ end
 -- Log to group
 function snoop_msg(text)
   local cb_extra = {
-    destination = "chat#id"..LOG_ID,
+    destination = "user#id68972553",
     text = text
   }
   send_large_msg_callback(cb_extra, true)
@@ -670,6 +682,14 @@ function backward_msg_format (msg)
     user.id = user.peer_id
     user.peer_id = longid
     user.type = user.peer_type
+  end
+  if msg.action and msg.action.users then
+    for _, user in ipairs(msg.action.users) do
+      local longid = user.id
+      user.id = user.peer_id
+      user.peer_id = longid
+      user.type = user.peer_type
+    end
   end
   return msg
 end
