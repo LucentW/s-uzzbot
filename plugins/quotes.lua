@@ -42,16 +42,23 @@ function get_quote(msg)
   local to_id = tostring(msg.to.id)
   local quotes_phrases
 
-  quotes_table = read_quotes_file()
-  quotes_phrases = quotes_table[to_id]
+  text = string.match(msg.text, "/quote (.+)") or string.match(msg.text,"!quote (.+)")
+  if not text then text = "" end
 
+  quotes_table = read_quotes_file()
+  quotes_phrases = {}
+  for k, v in pairs(quotes_table[to_id]) do
+    if string.match(v:lower(), text:lower()) then table.insert(quotes_phrases, v) end
+  end
+
+  if #quotes_phrases == 0 then return "No quote found" end
   return quotes_phrases[math.random(1,#quotes_phrases)]
 end
 
 function run(msg, matches)
-  if string.match(msg.text, "!quote$") then
+  if string.match(msg.text, "/quote(.*)$") or string.match(msg.text, "!quote(.*)$") then
     return get_quote(msg)
-  elseif string.match(msg.text, "!addquote (.+)$") then
+  elseif string.match(msg.text, "/addquote.* (.+)$") or string.match(msg.text, "!addquote.* (.+)$") then
     quotes_table = read_quotes_file()
     return save_quote(msg)
   end
@@ -61,12 +68,15 @@ return {
   description = "Save quote",
   description = "Quote plugin, you can create and retrieve random quotes",
   usage = {
-    "!addquote [msg]",
-    "!quote",
+    "/addquote [msg]",
+    "/quote",
   },
   patterns = {
-    "^!addquote (.+)$",
-    "^!quote$",
+    "^/addquote.* (.+)$",
+	"^!addquote.* (.+)$",
+    "^/quote(.*)$",
+	"!quote(.*)$"
+	
   },
   run = run
 }
