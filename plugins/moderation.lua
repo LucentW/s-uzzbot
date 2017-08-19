@@ -251,7 +251,7 @@ do
       members = result
     end
 
-    if success == 1 then
+    if success then
       member_username = result.username
       member_id = result.peer_id
       if mod_cmd == 'promote' then

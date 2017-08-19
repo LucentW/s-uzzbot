@@ -29,7 +29,7 @@ local function kick_user(user_id, chat_id)
   local chat = 'chat#id'..chat_id
   local user = 'user#id'..user_id
   chat_del_user(chat, user, function (data, success, result)
-      if success ~= 1 then
+      if not success then
         local text = str2emoji(":exclamation:")..' I can\'t kick '..data.user..' but should be kicked'
         snoop_msg('I am unable to kick user '..user_id..' from group '..chat_id..'.')
         send_msg(data.chat, text, ok_cb, nil)
@@ -41,7 +41,7 @@ local function kick_user(user_id, chat_id)
     local chat = 'channel#id'..chat_id
     local user = 'user#id'..user_id
     channel_kick(chat, user, function (data, success, result)
-        if success ~= 1 then
+        if not success then
           local text = str2emoji(":exclamation:")..' I can\'t kick '..data.user..' but should be kicked'
           snoop_msg('I am unable to kick user '..user_id..' from group '..chat_id..'.')
           send_msg(data.chat, text, ok_cb, nil)

@@ -206,7 +206,7 @@ local function get_all_memes_names()
 end
 
 local function callback_send(cb_extra, success, data)
-  if success == 0 then
+  if not success then
     send_msg(cb_extra.receiver, "Something wrong happened, probably that meme had been removed from server: " .. cb_extra.url, ok_cb, false)
   end
 end
