@@ -65,7 +65,7 @@ end
 
 -- DEPRECATED
 function string.trim(s)
-  _print("string.trim(s) is DEPRECATED use string:trim() instead")
+  log(LOGLEVEL_WARN, "string.trim(s) is DEPRECATED use string:trim() instead")
   return s:gsub("^%s*(.-)%s*$", "%1")
 end
 
@@ -105,7 +105,7 @@ end
 -- will get the text after the last "/" for filename
 -- and content-type for extension
 function download_to_file(url, file_name)
-  _print("url to download: "..url)
+  log(LOGLEVEL_INFO, "url to download: "..url)
 
   local respbody = {}
   local options = {
@@ -133,7 +133,7 @@ function download_to_file(url, file_name)
   file_name = file_name or get_http_file_name(url, headers)
 
   local file_path = "/tmp/"..file_name
-  _print("Saved to: "..file_path)
+  log(LOGLEVEL_INFO, "Saved to: "..file_path)
 
   file = io.open(file_path, "w+")
   file:write(table.concat(respbody))
@@ -143,7 +143,7 @@ function download_to_file(url, file_name)
 end
 
 function vardump(value)
-  _print(serpent.block(value, {comment=false}))
+  log(LOGLEVEL_INFO, serpent.block(value, {comment=false}))
 end
 
 -- taken from http://stackoverflow.com/a/11130774/3163199
@@ -328,7 +328,7 @@ end
 
 -- DEPRECATED!!!!!
 function string.starts(String, Start)
-  _print("string.starts(String, Start) is DEPRECATED use string:starts(text) instead")
+  log(LOGLEVEL_INFO, "string.starts(String, Start) is DEPRECATED use string:starts(text) instead")
   return Start == string.sub(String,1,string.len(Start))
 end
 
@@ -361,7 +361,7 @@ function send_photo_from_url(receiver, url, cb_function, cb_extra)
     local text = 'Error downloading the image'
     send_msg(receiver, text, cb_function, cb_extra)
   else
-    _print("File path: "..file_path)
+    log(LOGLEVEL_INFO, "File path: "..file_path)
     _send_photo(receiver, file_path, cb_function, cb_extra)
   end
 end
@@ -376,7 +376,7 @@ function send_photo_from_url_callback(cb_extra, success, result)
     local text = 'Error downloading the image'
     send_msg(receiver, text, ok_cb, false)
   else
-    _print("File path: "..file_path)
+    log(LOGLEVEL_INFO, "File path: "..file_path)
     _send_photo(receiver, file_path, ok_cb, false)
   end
 end
@@ -403,7 +403,7 @@ function send_photos_from_url_callback(cb_extra, success, result)
   -- The previously image to remove
   if remove_path ~= nil then
     os.remove(remove_path)
-    _print("Deleted: "..remove_path)
+    log(LOGLEVEL_INFO, "Deleted: "..remove_path)
   end
 
   -- Nil or empty, exit case (no more urls)
@@ -433,7 +433,7 @@ function rmtmp_cb(cb_extra, success, result)
 
   if file_path ~= nil then
     os.remove(file_path)
-    _print("Deleted: "..file_path)
+    log(LOGLEVEL_INFO, "Deleted: "..file_path)
   end
   -- Finally call the callback
   cb_function(cb_extra, success, result)
@@ -455,7 +455,7 @@ end
 -- cb_function and cb_extra are optionals callback
 function send_document_from_url(receiver, url, cb_function, cb_extra)
   local file_path = download_to_file(url, false)
-  _print("File path: "..file_path)
+  log(LOGLEVEL_INFO, "File path: "..file_path)
   _send_document(receiver, file_path, cb_function, cb_extra)
 end
 
@@ -522,7 +522,7 @@ function send_order_msg_callback(cb_extra, success, result)
   local file_path = cb_extra.file_path
   if file_path ~= nil then
     os.remove(file_path)
-    _print("Deleted: " .. file_path)
+    log(LOGLEVEL_INFO, "Deleted: " .. file_path)
   end
   if type(msgs) == 'string' then
     send_large_msg(destination, msgs)
@@ -638,9 +638,9 @@ function load_from_file(file, default_data)
     -- Create a new empty table
     default_data = default_data or {}
     serialize_to_file(default_data, file)
-    _print ('Created file ' .. file)
+    log(LOGLEVEL_INFO, 'Created file ' .. file)
   else
-    _print ('Data loaded from file ' .. file)
+    log(LOGLEVEL_INFO, 'Data loaded from file ' .. file)
     f:close()
   end
   return loadfile (file)()
