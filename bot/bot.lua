@@ -7,6 +7,10 @@ require("./bot/emoji")
 
 VERSION = '0.2'
 
+function _print (arg)
+  if (not quiet) then print(arg) end
+end
+
 -- This function is called when tg receive a msg
 function on_msg_receive (msg)
   if not started then
@@ -30,7 +34,7 @@ function on_msg_receive (msg)
       if not whitelistmod or (whitelistmod and is_momod(msg)) then
         match_plugins(msg)
       else
-        print('Message ignored -- '..chat_id..' has modonly wl enabled')
+        _print('Message ignored -- '..chat_id..' has modonly wl enabled')
       end
 
 -- Commented out since it is a cosmetic feature.
@@ -51,53 +55,56 @@ function on_binlog_replay_end()
 
   -- See plugins/isup.lua as an example for cron
 
-  _config = load_config()
+  -- You can optionally pass a pre-existing configuration. Used in tests.
+  if (not _config) then
+    _config = load_config()
+  end
 
   -- load plugins
   plugins = {}
-  load_plugins()
+  return load_plugins()
 end
 
 function msg_valid(msg)
   -- Don't process outgoing messages
   if msg.out then
-    print('\27[36mNot valid: msg from us\27[39m')
+    _print('\27[36mNot valid: msg from us\27[39m')
     return false
   end
 
   -- Before bot was started
   if msg.date < now then
-    print('\27[36mNot valid: old msg\27[39m')
+    _print('\27[36mNot valid: old msg\27[39m')
     return false
   end
 
   if msg.unread == 0 then
-    print('\27[36mNot valid: read\27[39m')
+    _print('\27[36mNot valid: read\27[39m')
     return false
   end
 
   if not msg.to.id then
-    print('\27[36mNot valid: To id not provided\27[39m')
+    _print('\27[36mNot valid: To id not provided\27[39m')
     return false
   end
 
   if not msg.from.id then
-    print('\27[36mNot valid: From id not provided\27[39m')
+    _print('\27[36mNot valid: From id not provided\27[39m')
     return false
   end
 
   if msg.from.id == our_id then
-    print('\27[36mNot valid: Msg from our id\27[39m')
+    _print('\27[36mNot valid: Msg from our id\27[39m')
     return false
   end
 
   if msg.to.type == 'encr_chat' then
-    print('\27[36mNot valid: Encrypted chat\27[39m')
+    _print('\27[36mNot valid: Encrypted chat\27[39m')
     return false
   end
 
   if msg.from.id == 777000 then
-    print('\27[36mNot valid: Telegram message\27[39m')
+    _print('\27[36mNot valid: Telegram message\27[39m')
     return false
   end
 
@@ -126,7 +133,7 @@ end
 function pre_process_msg(msg)
   for name,plugin in pairs(plugins) do
     if plugin.pre_process and msg then
-      print('Preprocess', name)
+      _print('Preprocess', name)
       msg = plugin.pre_process(msg)
     end
   end
@@ -150,10 +157,10 @@ local function is_plugin_disabled_on_chat(plugin_name, receiver)
     for disabled_plugin,disabled in pairs(disabled_chats[receiver]) do
       if disabled_plugin == plugin_name and disabled then
         if plugins[disabled_plugin].hidden then
-          print('Plugin '..disabled_plugin..' is disabled on this chat')
+          _print('Plugin '..disabled_plugin..' is disabled on this chat')
         else
           local warning = 'Plugin '..disabled_plugin..' is disabled on this chat'
-          print(warning)
+          _print(warning)
           send_msg(receiver, warning, ok_cb, false)
         end
         return true
@@ -180,7 +187,7 @@ function match_plugin(plugin, plugin_name, msg)
   for k, pattern in pairs(plugin.patterns) do
     local matches = match_pattern(pattern, msg.text)
     if matches then
-      print("msg matches: ", pattern)
+      _print("msg matches: ", pattern)
 
       if not is_sudo(msg) then
         if is_plugin_disabled_on_chat(plugin_name, receiver) then
@@ -215,7 +222,7 @@ end
 -- Save the content of _config to config.lua
 function save_config( )
   serialize_to_file(_config, './data/config.lua')
-  print ('saved config into ./data/config.lua')
+  _print ('saved config into ./data/config.lua')
 end
 
 -- Returns the config from config.lua file.
@@ -224,14 +231,14 @@ function load_config( )
   local f = io.open('./data/config.lua', "r")
   -- If config.lua doesn't exist
   if not f then
-    print ("Created new config file: data/config.lua")
+    _print ("Created new config file: data/config.lua")
     create_config()
   else
     f:close()
   end
   local config = loadfile ("./data/config.lua")()
   for v,user in pairs(config.sudo_users) do
-    print("Allowed user: " .. user)
+    _print("Allowed user: " .. user)
   end
   return config
 end
@@ -288,8 +295,8 @@ function create_config( )
     moderation = {data = 'data/moderation.json'}
   }
   serialize_to_file(config, './data/config.lua')
-  print ('Saved clean configuration into ./data/config.lua')
-  print ('Make sure to edit sudo_users and add your ID.')
+  _print ('Saved clean configuration into ./data/config.lua')
+  _print ('Make sure to edit sudo_users and add your ID.')
 end
 
 function on_our_id (id)
@@ -317,8 +324,9 @@ end
 
 -- Enable plugins in config.json
 function load_plugins()
+  local success = true
   for k, v in pairs(_config.enabled_plugins) do
-    print("Loading plugin", v)
+    _print("Loading plugin " .. v)
 
     local ok, err = pcall(function()
         local t = loadfile("plugins/"..v..'.lua')()
@@ -326,11 +334,13 @@ function load_plugins()
       end)
 
     if not ok then
-      print('\27[31mError loading plugin '..v..'\27[39m')
-      print('\27[31m'..err..'\27[39m')
+      success = false
+      _print('\27[31mError loading plugin '..v..'\27[39m')
+      _print('\27[31m'..err..'\27[39m')
     end
-
   end
+
+  return success
 end
 
 -- custom add
