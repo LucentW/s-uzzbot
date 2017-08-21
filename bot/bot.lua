@@ -177,6 +177,7 @@ function match_plugin(plugin, plugin_name, msg)
   local receiver = get_receiver(msg)
 
   -- Go over patterns. If one matches it's enough.
+  -- https://stackoverflow.com/a/12929685
   for k, pattern in pairs(plugin.patterns) do
     local matches = match_pattern(pattern, msg.text)
     if matches then
@@ -184,10 +185,10 @@ function match_plugin(plugin, plugin_name, msg)
 
       if not is_sudo(msg) then
         if is_plugin_disabled_on_chat(plugin_name, receiver) then
-          return nil
+          goto continue
         end
         if plugin.nsfw and is_nsfw_disabled_on_chat(receiver) then
-          return nil
+          goto continue
         end
       end
 
@@ -202,8 +203,9 @@ function match_plugin(plugin, plugin_name, msg)
         end
       end
       -- One patterns matches
-      return
+      goto continue
     end
+    ::continue::
   end
 end
 
