@@ -17,7 +17,8 @@ function log(level, message)
   if (level >= loglevel) then print(message) end
 end
 
--- This function is called when tg receive a msg
+-- This function is called when tg receives a msg
+-- Returns false if the message was ignored, true otherwise
 function on_msg_receive (msg)
   if not started then
     return
@@ -39,6 +40,7 @@ function on_msg_receive (msg)
     if msg then
       if not whitelistmod or (whitelistmod and is_momod(msg)) then
         match_plugins(msg)
+        return true
       else
         log(LOGLEVEL_INFO, 'Message ignored -- '..chat_id..' has modonly wl enabled')
       end
@@ -50,6 +52,7 @@ function on_msg_receive (msg)
 
     end
   end
+  return false
 end
 
 function ok_cb(extra, success, result)
@@ -193,14 +196,14 @@ function match_plugin(plugin, plugin_name, msg)
   for k, pattern in pairs(plugin.patterns) do
     local matches = match_pattern(pattern, msg.text)
     if matches then
-      log(LOGLEVEL_INFO, "msg matches: ", pattern)
+      print("msg matches: ", pattern)
 
       if not is_sudo(msg) then
         if is_plugin_disabled_on_chat(plugin_name, receiver) then
-          return nil
+          goto continue
         end
         if plugin.nsfw and is_nsfw_disabled_on_chat(receiver) then
-          return nil
+          goto continue
         end
       end
 
@@ -215,8 +218,9 @@ function match_plugin(plugin, plugin_name, msg)
         end
       end
       -- One patterns matches
-      return
+      goto continue
     end
+    ::continue::
   end
 end
 
@@ -329,6 +333,7 @@ function on_get_difference_end ()
 end
 
 -- Enable plugins in config.json
+-- Returns true if all the plugins were loaded correctly, false otherwise
 function load_plugins()
   local success = true
   for k, v in pairs(_config.enabled_plugins) do
