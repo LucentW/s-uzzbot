@@ -24,7 +24,7 @@ end
 
 local function addexcept_reply(extra, success, result)
   local hash = 'anti-flood:exception:'..result.to.peer_id..':'..result.from.peer_id
-  redis:set(hash, true)
+  redis:set(hash, 1)
   send_large_msg(extra, str2emoji(':information_source:')..' User ID '..result.from.peer_id..' is now exempt from antiflood checks.')
 end
 
@@ -63,7 +63,7 @@ local function run (msg, matches)
     end
   end
   if matches[1] == 'enable' then
-    redis:set(hash, true)
+    redis:set(hash, 1)
     return str2emoji(':information_source:')..' Anti-flood enabled on chat'
   end
   if matches[1] == 'disable' then
@@ -109,7 +109,7 @@ local function run (msg, matches)
 
     hash = 'anti-flood:exception:'..chat..':'..matches[2]
     if matches[1] == 'addexcept' then
-      redis:set(hash, true)
+      redis:set(hash, 1)
       return str2emoji(':information_source:')..' User ID '..matches[2]..' is now exempt from antiflood checks.'
     end
     if matches[1] == 'delexcept' then
@@ -194,7 +194,7 @@ local function pre_process (msg)
             snoop_msg('User '..string.gsub(msg.from.print_name, '_', ' ')..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..real_text)
           end
           send_msg(receiver, text, ok_cb, nil)
-          redis:set(hash_warned, true)
+          redis:set(hash_warned, 1)
           if not is_chan_msg(msg) then
             kick_user(user, chat)
           else
