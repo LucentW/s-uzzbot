@@ -84,9 +84,8 @@ describe("Bot", function()
 		test_load_plugins({"ping"})
 	end)
 	it("responds to pings", function()
-		-- Create a stub in advance
 		_G.send_msg = spy.new(function(destination, text) end)
-
+		
 		test_load_plugins({"ping"})
 		test_receive_message("!ping")
 		assert.spy(_G.send_msg).was.called()
@@ -94,42 +93,31 @@ describe("Bot", function()
 end)
 
 describe("Antiflood", function()
-	it("Can be enabled", function()
-		test_load_plugins({"anti-flood", "ping"})
+	local limit = 5
+	it("Can be enabled and configured", function()
+		test_load_plugins({"anti-flood", "echo"})
 		local msg = test_receive_message("!antiflood enable", true)
+		local msg = test_receive_message("!antiflood maxmsg " .. limit, true)
 		assert.is_true(is_antiflood_enabled(msg))
 	end)
+	it("Blocks floods", function()
+		local num_replies = 0
+		local kicked = false
+		_G.send_msg = function(destination, text)
+			if text == "spam" then
+				num_replies = num_replies + 1
+			end
+		end
+		_G.chat_del_user = function(chat, user, cb)
+			kicked = true
+			cb(nil, true)
+		end
+		for i = 1, 100 do
+			test_receive_message("!echo spam", false, true)
+			if kicked then break end
+		end
+		assert.is_true(kicked)
+		assert.are.equal(limit, num_replies)
+		--assert.spy(_G.send_msg).was.called(5)
+	end)
 end)
-
--- Typical message:
--- {
---   date = 1503346812,
---   flags = 257,
---   from = {
---     access_hash = -1.11111111111111+18,
---     bot = false,
---     first_name = "User",
---     flags = 196609,
---     id = "$010000000be6840443e616f4ce4780c0",
---     peer_id = 75818507,
---     peer_type = "user",
---     phone = "11111111111",
---     print_name = "User",
---     username = "username"
---   },
---   id = "020000006466ef0024923a00000000000000000000000000",
---   out = false,
---   service = false,
---   temp_id = 2,
---   text = "test",
---   to = {
---     flags = 65537,
---     id = "$020000006466ef000000000000000000",
---     members_num = 100,
---     peer_id = 15689316,
---     peer_type = "chat",
---     print_name = "Group name here",
---     title = "Group name here"
---   },
---   unread = true
--- }
