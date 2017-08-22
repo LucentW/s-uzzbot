@@ -21,6 +21,7 @@ end
 -- Returns false if the message was ignored, true otherwise
 function on_msg_receive (msg)
   if not started then
+    log(LOGLEVEL_DEBUG, "not started")
     return
   end
 
@@ -35,24 +36,29 @@ function on_msg_receive (msg)
   -- vardump(msg)
   msg = pre_process_service_msg(msg)
   
-  if msg_valid(msg) then
-    msg = pre_process_msg(msg)
-    if msg then
-      if not whitelistmod or (whitelistmod and is_momod(msg)) then
-        match_plugins(msg)
-        return true
-      else
-        log(LOGLEVEL_INFO, 'Message ignored -- '..chat_id..' has modonly wl enabled')
-      end
+  if not msg_valid(msg) then
+    log(LOGLEVEL_DEBUG, "msg not valid")
+    return false
+  end
+
+  msg = pre_process_msg(msg)
+  if not msg then
+    log(LOGLEVEL_DEBUG, "preprocess failed")
+    return false
+  end
 
 -- Commented out since it is a cosmetic feature.
 -- Also breaks UX on groups since on standard mode it marks the message
 -- as read for everybody.
 --    mark_read(receiver, ok_cb, false)
 
-    end
+  if not (not whitelistmod or (whitelistmod and is_momod(msg))) then
+    log(LOGLEVEL_INFO, 'Message ignored -- '..chat_id..' has modonly wl enabled')
+    return false
   end
-  return false
+
+  match_plugins(msg)
+  return true
 end
 
 function ok_cb(extra, success, result)
@@ -142,7 +148,7 @@ end
 function pre_process_msg(msg)
   for name,plugin in pairs(plugins) do
     if plugin.pre_process and msg then
-      log(LOGLEVEL_INFO, 'Preprocess', name)
+      log(LOGLEVEL_INFO, 'Preprocess ' .. name)
       msg = plugin.pre_process(msg)
     end
   end
