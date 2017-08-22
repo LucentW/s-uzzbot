@@ -202,7 +202,7 @@ function match_plugin(plugin, plugin_name, msg)
   for k, pattern in pairs(plugin.patterns) do
     local matches = match_pattern(pattern, msg.text)
     if matches then
-      print("msg matches: ", pattern)
+      log(LOGLEVEL_INFO, "msg matches: ", pattern)
 
       if not is_sudo(msg) then
         if is_plugin_disabled_on_chat(plugin_name, receiver) then

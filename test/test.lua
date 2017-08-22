@@ -1,4 +1,5 @@
 SUDO_USER_ID = 12345
+_G.IS_TEST_ENVIRONMENT = true
 describe("Bot", function()
 	it("initializes", function()
 		_G.postpone = function() end
@@ -67,7 +68,6 @@ end)
 describe("Antiflood", function()
 	it("Can be enabled", function()
 		_G.send_msg = spy.new(function(destination, text)
-			print(text)
 		end)
 		_config.enabled_plugins = {"anti-flood"}
 		local plugins_loaded_correctly = load_plugins()

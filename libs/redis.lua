@@ -27,6 +27,7 @@ end)
 
 if not ok then
   local fake_func = function()
+    if IS_TEST_ENVIRONMENT then return end
     print('\27[31mCan\'t connect with Redis, install/configure it!\27[39m')
   end
   fake_func()
