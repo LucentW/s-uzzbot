@@ -150,7 +150,7 @@ local function pre_process (msg)
       local msgs = tonumber(redis:get(hash) or 0)
       local warned = redis:get(hash_warned) or false
 
-      if msgs > NUM_MSG_MAX and not warned then
+      if msgs > NUM_MSG_MAX then
         local receiver = get_receiver(msg)
         local user = msg.from.id
         local text = str2emoji(":exclamation:")..' User '
@@ -188,13 +188,17 @@ local function pre_process (msg)
             end
           end
 
-          if msg.from.username ~= nil then
-            snoop_msg('User @'..msg.from.username..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..real_text)
-          else
-            snoop_msg('User '..string.gsub(msg.from.print_name, '_', ' ')..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..real_text)
+          -- Cooldown: avoid sending more than one message in TIME_CHECK seconds
+          if not warned then
+            if msg.from.username ~= nil then
+              snoop_msg('User @'..msg.from.username..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..real_text)
+            else
+              snoop_msg('User '..string.gsub(msg.from.print_name, '_', ' ')..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..real_text)
+            end
+            send_msg(receiver, text, ok_cb, nil)
           end
-          send_msg(receiver, text, ok_cb, nil)
-          redis:set(hash_warned, 1)
+          redis:setex(hash_warned, TIME_CHECK, 1)
+
           if not is_chan_msg(msg) then
             kick_user(user, chat)
           else
