@@ -150,6 +150,8 @@ local function pre_process (msg)
       local msgs = tonumber(redis:get(hash) or 0)
       local warned = redis:get(hash_warned) or false
 
+      msgs = msgs + 1
+      redis:setex(hash, TIME_CHECK, msgs)
       if msgs > NUM_MSG_MAX then
         local receiver = get_receiver(msg)
         local user = msg.from.id
@@ -207,7 +209,6 @@ local function pre_process (msg)
           msg = nil
         end
       end
-      redis:setex(hash, TIME_CHECK, msgs+1)
     end
   end
   return msg
