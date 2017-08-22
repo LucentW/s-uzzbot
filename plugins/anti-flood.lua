@@ -209,6 +209,12 @@ local function pre_process (msg)
   return msg
 end
 
+-- Public function, used in test suite
+function is_antiflood_enabled(msg)
+  -- ugly cast to boolean
+  return not not redis:get('anti-flood:enabled:'..msg.to.id)
+end
+
 return {
   description = 'Plugin to kick flooders from group.',
   usage = {

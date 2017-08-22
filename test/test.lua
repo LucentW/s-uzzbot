@@ -1,3 +1,4 @@
+SUDO_USER_ID = 12345
 describe("Bot", function()
 	it("initializes", function()
 		_G.postpone = function() end
@@ -9,7 +10,8 @@ describe("Bot", function()
 		    data = "data/moderation.json"
 		  },
 		  sudo_users = {
-		    0
+		    0,
+		    SUDO_USER_ID
 		  }
 		}
 		require("bot/bot")
@@ -59,6 +61,52 @@ describe("Bot", function()
 		})
 		assert.is_true(was_message_received)
 		assert.spy(_G.send_msg).was.called()
+	end)
+end)
+
+describe("Antiflood", function()
+	it("Can be enabled", function()
+		_G.send_msg = spy.new(function(destination, text)
+			print(text)
+		end)
+		_config.enabled_plugins = {"anti-flood"}
+		local plugins_loaded_correctly = load_plugins()
+		assert.is_true(plugins_loaded_correctly)
+		local msg = {
+		  date = 1/0, -- a date infinitely in the future
+		  flags = 257,
+		  from = {
+		    access_hash = -1.11111111111111+18,
+		    bot = false,
+		    first_name = "Admin",
+		    flags = 196609,
+		    id = "$010000000be6840443e616f4ce4780c0",
+		    peer_id = SUDO_USER_ID,
+		    peer_type = "user",
+		    phone = "11111111111",
+		    print_name = "Admin",
+		    username = "Admin"
+		  },
+		  id = "020000006466ef0024923a00000000000000000000000000",
+		  out = false,
+		  service = false,
+		  temp_id = 2,
+		  text = "!antiflood enable",
+		  to = {
+		    flags = 65537,
+		    id = "$020000006466ef000000000000000000",
+		    members_num = 100,
+		    peer_id = 15689316,
+		    peer_type = "chat",
+		    print_name = "Group name here",
+		    title = "Group name here"
+		  },
+		  unread = true
+		}
+		local was_message_received = on_msg_receive(msg)
+		assert.is_true(was_message_received)
+		assert.spy(_G.send_msg).was.called()
+		assert.is_true(is_antiflood_enabled(msg))
 	end)
 end)
 
