@@ -134,7 +134,7 @@ local function pre_process (msg)
   local enabled = redis:get(hash_enable)
 
   if enabled then
-    print('anti-flood enabled')
+    log(LOGLEVEL_INFO, 'anti-flood enabled')
     -- Check flood
     if msg.from.type == 'user' then
       local hash_maxmsg = 'anti-flood:maxmsg:'..msg.to.id
