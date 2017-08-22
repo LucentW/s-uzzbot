@@ -166,77 +166,73 @@ end
 
 -- User has superuser privileges
 function is_sudo(msg)
-  local var = false
   -- Check users id in config
   for v,user in pairs(_config.sudo_users) do
     if user == msg.from.id then
-      var = true
+      return true
     end
   end
-  return var
+  return false
 end
 
 -- user has admins privileges
 function is_admin(msg)
-  local var = false
   local data = load_data(_config.moderation.data)
   local user = msg.from.id
   local admins = 'admins'
   if data[tostring(admins)] then
     if data[tostring(admins)][tostring(user)] then
-      var = true
+      return true
     end
   end
   for v,user in pairs(_config.sudo_users) do
     if user == msg.from.id then
-      var = true
+      return true
     end
   end
-  return var
+  return false
 end
 
 -- user has blocklist adding privileges
 function is_blocklistadm(msg)
-  local var = false
   local data = load_data(_config.moderation.data)
   local user = msg.from.id
   local blocklist = 'blocklist'
   if data[tostring(blocklist)] then
     if data[tostring(blocklist)][tostring(user)] then
-      var = true
+      return true
     end
   end
   for v,user in pairs(_config.sudo_users) do
     if user == msg.from.id then
-      var = true
+      return true
     end
   end
-  return var
+  return false
 end
 
 -- user has moderator privileges
 function is_momod(msg)
-  local var = false
   local data = load_data(_config.moderation.data)
   local user = msg.from.id
   if data[tostring(msg.to.id)] then
     if data[tostring(msg.to.id)]['moderators'] then
       if data[tostring(msg.to.id)]['moderators'][tostring(user)] then
-        var = true
+        return true
       end
     end
   end
   if data['admins'] then
     if data['admins'][tostring(user)] then
-      var = true
+      return true
     end
   end
   for v,user in pairs(_config.sudo_users) do
     if user == msg.from.id then
-      var = true
+      return true
     end
   end
-  return var
+  return false
 end
 
 -- check whether user is mod, admin or sudo
@@ -246,24 +242,24 @@ function is_mod(user_id, chat_id)
   if data[tostring(chat_id)] then
     if data[tostring(chat_id)]['moderators'] then
       if data[tostring(chat_id)]['moderators'][tostring(user_id)] then
-        var = true
+        return true
       end
     end
   end
   if data['admins'] then
     if data['admins'][tostring(user_id)] then
-      var = true
+      return true
     end
   end
   for v,user in pairs(_config.sudo_users) do
     if user == user_id then
-      var = true
+      return true
     end
   end
   if user == our_id then
-    var = true
+    return true
   end
-  return var
+  return false
 end
 
 -- Returns the name of the sender
@@ -616,18 +612,16 @@ end
 
 -- Returns a table with matches or nil
 function match_pattern(pattern, text, lower_case)
-  if text then
-    local matches = {}
-    if lower_case then
-      matches = { string.match(text:lower(), pattern) }
-    else
-      matches = { string.match(text, pattern) }
-    end
-    if next(matches) then
-      return matches
-    end
+  if not text then return nil end
+  local matches = {}
+  if lower_case then
+    matches = { string.match(text:lower(), pattern) }
+  else
+    matches = { string.match(text, pattern) }
   end
-  -- nil
+  if next(matches) then
+    return matches
+  end
 end
 
 -- Function to read data from files
