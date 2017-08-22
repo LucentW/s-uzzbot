@@ -202,7 +202,7 @@ function match_plugin(plugin, plugin_name, msg)
   for k, pattern in pairs(plugin.patterns) do
     local matches = match_pattern(pattern, msg.text)
     if matches then
-      log(LOGLEVEL_INFO, "msg matches: ", pattern)
+      log(LOGLEVEL_INFO, "msg matches: " .. pattern)
 
       if not is_sudo(msg) then
         if is_plugin_disabled_on_chat(plugin_name, receiver) then
@@ -346,7 +346,7 @@ function load_plugins()
     log(LOGLEVEL_INFO, "Loading plugin " .. v)
 
     local ok, err = pcall(function()
-        local t = loadfile("plugins/"..v..'.lua')()
+        local t = assert(loadfile("plugins/"..v..'.lua'))()
         plugins[v] = t
       end)
 
