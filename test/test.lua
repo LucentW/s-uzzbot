@@ -3,16 +3,16 @@ _G.IS_TEST_ENVIRONMENT = true
 _G.postpone = function() end
 
 -- Return a fake message.
---   isRoot: whether it comes from an admin
-function test_craft_message(text, isRoot)
+--   is_root: whether it comes from an admin
+function test_craft_message(text, is_root, custom_id, custom_username)
 	local _peer_id
 	local _username
-	if isRoot then
+	if is_root then
 		_peer_id = SUDO_USER_ID
 		_username = "root"
 	else
-		_peer_id = 100
-		_username = "johndoe"
+		_peer_id = custom_id or 100
+		_username = custom_username or "johndoe"
 	end
 	return {
 	  date = 1/0, -- a date infinitely in the future
@@ -20,13 +20,13 @@ function test_craft_message(text, isRoot)
 	  from = {
 	    access_hash = -1.11111111111111+18,
 	    bot = false,
-	    first_name = "John",
+	    first_name = _username,
 	    flags = 196609,
 	    id = "$010000000be6840443e616f4ce4780c0",
 	    peer_id = _peer_id,
 	    peer_type = "user",
 	    phone = "11111111111",
-	    print_name = "John Doe",
+	    print_name = _username,
 	    username = _username
 	  },
 	  id = "020000006466ef0024923a00000000000000000000000000",
@@ -48,14 +48,18 @@ function test_craft_message(text, isRoot)
 end
 
 -- Make the bot see a new message.
---   isRoot: whether the message comes from an admin
+--   is_root: whether the message comes from an admin
 --   doNotAcknowledge: whether we must check that the message was not dropped, eg. during preprocessing or because it is invalid
-function test_receive_message(text, isRoot, doNotAcknowledge)
-	local msg = test_craft_message(text, isRoot)
+function test_receive_message(msg, doNotAcknowledge)
 	local was_message_received = on_msg_receive(msg)
 	if not doNotAcknowledge then
 		assert.is_true(was_message_received)
 	end
+end
+
+function test_receive_text(text, is_root, doNotAcknowledge)
+	local msg = test_craft_message(text, is_root)
+	test_receive_message(msg, doNotAcknowledge)
 	return msg -- can be useful later
 end
 
@@ -88,7 +92,7 @@ describe("Bot", function()
 		_G.send_msg = spy.new(function(destination, text) end)
 
 		test_load_plugins({"ping"})
-		test_receive_message("!ping")
+		test_receive_text("!ping")
 		assert.spy(_G.send_msg).was.called()
 	end)
 end)
@@ -97,8 +101,8 @@ describe("Antiflood", function()
 	local limit = 5
 	it("Can be enabled and configured", function()
 		test_load_plugins({"anti-flood", "echo"})
-		local msg = test_receive_message("!antiflood enable", true)
-		local msg = test_receive_message("!antiflood maxmsg " .. limit, true)
+		local msg = test_receive_text("!antiflood enable", true)
+		local msg = test_receive_text("!antiflood maxmsg " .. limit, true)
 		assert.is_true(is_antiflood_enabled(msg))
 	end)
 	it("Blocks floods", function()
@@ -114,7 +118,7 @@ describe("Antiflood", function()
 			cb(nil, true)
 		end
 		for i = 1, 100 do
-			test_receive_message("!echo spam", false, true)
+			test_receive_text("!echo spam", false, true)
 			if kicked then break end
 		end
 		assert.is_true(kicked)
@@ -134,10 +138,49 @@ describe("Antiflood", function()
 		end
 		for i = 1, 100 do
 			-- Note that in this case we do ask for acknowledgement (doNotAcknowledge is false).
-			test_receive_message("!echo spam", true, false)
+			test_receive_text("!echo spam", true, false)
 			if kicked then break end
 		end
 		assert.is_false(kicked)
 		assert.are.equal(100, num_replies)
+	end)
+	it("Honours exceptions", function()
+		test_receive_text("!antiflood addexcept 1234", true)
+
+		local ham_replies = 0
+		local spam_replies = 0
+		_G.send_msg = function(destination, text)
+			if text == "I'm ham!" then
+				ham_replies = ham_replies + 1
+			elseif text == "I'm spam!" then
+				spam_replies = spam_replies + 1
+			end
+		end
+		local ham_kicked = false
+		local spam_kicked = false
+		_G.chat_del_user = function(chat, user, cb)
+			if user == "user#id1234" then
+				ham_kicked = true
+			elseif user == "user#id4321" then
+				spam_kicked = true
+			else
+				error("Kicking unknown user: " .. user)
+			end
+			cb(nil, true)
+		end
+
+		-- Note: we'll use custom IDs, because the default user has supposedly been kicked for flooding
+		local ham_msg = test_craft_message("!echo I'm ham!", false, 1234, "hamsender")
+		local spam_msg = test_craft_message("!echo I'm spam!", false, 4321, "spamsender")
+
+		for i = 1, 100 do
+			if not spam_kicked then test_receive_message(spam_msg, true) end
+			if not ham_kicked then test_receive_message(ham_msg) end -- Ask for acknowledgment
+		end
+
+		assert.is_false(ham_kicked)
+		assert.is_true(spam_kicked)
+		assert.are.equal(100, ham_replies)
+		assert.are.equal(limit, spam_replies)
 	end)
 end)
