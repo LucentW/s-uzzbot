@@ -126,92 +126,90 @@ end
 local function pre_process (msg)
   -- Ignore service msg
   if msg.service then
-    print('Service message')
+    log(LOGLEVEL_INFO, 'Service message')
     return msg
   end
 
   local hash_enable = 'anti-flood:enabled:'..msg.to.id
   local enabled = redis:get(hash_enable)
 
-  if enabled then
-    log(LOGLEVEL_INFO, 'anti-flood enabled')
-    -- Check flood
-    if msg.from.type == 'user' then
-      local hash_maxmsg = 'anti-flood:maxmsg:'..msg.to.id
-      local hash_timeframe = 'anti-flood:timeframe:'..msg.to.id
+  if not enabled then return msg end
+  log(LOGLEVEL_INFO, 'anti-flood enabled')
 
-      -- Max number of messages per TIME_CHECK seconds
-      local NUM_MSG_MAX = tonumber(redis:get(hash_maxmsg) or 5)
-      local TIME_CHECK = tonumber(redis:get(hash_timeframe) or 5)
+  -- Check flood
+  if msg.from.type ~= 'user' then return msg end
+  local hash_maxmsg = 'anti-flood:maxmsg:'..msg.to.id
+  local hash_timeframe = 'anti-flood:timeframe:'..msg.to.id
 
-      -- Increase the number of messages from the user on the chat
-      local hash = 'anti-flood:'..msg.from.id..':'..msg.to.id..':msg-num'
-      local hash_warned = 'anti-flood:'..msg.from.id..':'..msg.to.id..':msg-num'
-      local msgs = tonumber(redis:get(hash) or 0)
-      local warned = redis:get(hash_warned) or false
+  -- Max number of messages per TIME_CHECK seconds
+  local NUM_MSG_MAX = tonumber(redis:get(hash_maxmsg) or 5)
+  local TIME_CHECK = tonumber(redis:get(hash_timeframe) or 5)
 
-      msgs = msgs + 1
-      redis:setex(hash, TIME_CHECK, msgs)
-      if msgs > NUM_MSG_MAX then
-        local receiver = get_receiver(msg)
-        local user = msg.from.id
-        local text = str2emoji(":exclamation:")..' User '
-        if msg.from.username ~= nil then
-          text = text..' @'..msg.from.username..' ['..user..'] is flooding'
-        else
-          text = text..string.gsub(msg.from.print_name, '_', ' ')..' ['..user..'] is flooding'
-        end
-        local chat = msg.to.id
-        local hash_exception = 'anti-flood:exception:'..msg.to.id..':'..msg.from.id
+  -- Increase the number of messages from the user on the chat
+  local hash = 'anti-flood:'..msg.from.id..':'..msg.to.id..':msg-num'
+  local hash_warned = 'anti-flood:'..msg.from.id..':'..msg.to.id..':msg-num'
+  local msgs = tonumber(redis:get(hash) or 0)
+  local warned = redis:get(hash_warned) or false
 
-        if not is_chat_msg(msg) then
-          print("Flood in not a chat group!")
-          msg = nil
-        elseif user == tostring(our_id) then
-          print('I won\'t kick myself')
-          msg = nil
-        elseif is_momod(msg) then
-          print('I won\'t kick a mod/admin/sudo!')
-          msg = nil
-        elseif redis:get(hash_exception) then
-          print('User is exempt from antiflood checks!')
-          msg = nil
-        else
-          local real_text
-          if msg.media ~= nil then
-            if msg.media.caption ~= nil then
-              real_text = msg.media.caption
-            else
-              real_text = "[media with no caption]"
-            end
-          else
-            if msg.text ~= nil then
-              real_text = msg.text
-            end
-          end
+  msgs = msgs + 1
+  redis:setex(hash, TIME_CHECK, msgs)
+  if msgs <= NUM_MSG_MAX then return msg end
 
-          -- Cooldown: avoid sending more than one message in TIME_CHECK seconds
-          if not warned then
-            if msg.from.username ~= nil then
-              snoop_msg('User @'..msg.from.username..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..real_text)
-            else
-              snoop_msg('User '..string.gsub(msg.from.print_name, '_', ' ')..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..real_text)
-            end
-            send_msg(receiver, text, ok_cb, nil)
-          end
-          redis:setex(hash_warned, TIME_CHECK, 1)
+  local receiver = get_receiver(msg)
+  local user = msg.from.id
+  local text = str2emoji(":exclamation:")..' User '
+  if msg.from.username ~= nil then
+    text = text..' @'..msg.from.username..' ['..user..'] is flooding'
+  else
+    text = text..string.gsub(msg.from.print_name, '_', ' ')..' ['..user..'] is flooding'
+  end
+  local chat = msg.to.id
+  local hash_exception = 'anti-flood:exception:'..msg.to.id..':'..msg.from.id
 
-          if not is_chan_msg(msg) then
-            kick_user(user, chat)
-          else
-            kick_chan_user(user, chat)
-          end
-          msg = nil
-        end
-      end
+  if not is_chat_msg(msg) then
+    log(LOGLEVEL_INFO, "Flood in not a chat group!")
+    return msg
+  elseif user == tostring(our_id) then
+    log(LOGLEVEL_INFO, 'I won\'t kick myself')
+    return msg
+  elseif is_momod(msg) then
+    log(LOGLEVEL_INFO, 'I won\'t kick a mod/admin/sudo!')
+    return msg
+  elseif redis:get(hash_exception) then
+    log(LOGLEVEL_INFO, 'User is exempt from antiflood checks!')
+    return msg
+  end
+
+  local real_text
+  if msg.media ~= nil then
+    if msg.media.caption ~= nil then
+      real_text = msg.media.caption
+    else
+      real_text = "[media with no caption]"
+    end
+  else
+    if msg.text ~= nil then
+      real_text = msg.text
     end
   end
-  return msg
+
+  -- Cooldown: avoid sending more than one message in TIME_CHECK seconds
+  if not warned then
+    if msg.from.username ~= nil then
+      snoop_msg('User @'..msg.from.username..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..real_text)
+    else
+      snoop_msg('User '..string.gsub(msg.from.print_name, '_', ' ')..' ['..msg.from.id..'] has been found flooding.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..real_text)
+    end
+    send_msg(receiver, text, ok_cb, nil)
+  end
+  redis:setex(hash_warned, TIME_CHECK, 1)
+
+  if not is_chan_msg(msg) then
+    kick_user(user, chat)
+  else
+    kick_chan_user(user, chat)
+  end
+  return nil
 end
 
 -- Public function, used in test suite
