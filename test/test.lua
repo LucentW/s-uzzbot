@@ -169,11 +169,12 @@ describe("Antiflood", function()
 			cb(nil, true)
 		end
 
-		-- Note: we'll use custom IDs, because the default user has supposedly been kicked for flooding
-		local ham_msg = test_craft_message("!echo I'm ham!", false, 1234, "hamsender")
-		local spam_msg = test_craft_message("!echo I'm spam!", false, 4321, "spamsender")
-
 		for i = 1, 100 do
+			-- Note: we'll use custom IDs, because the default user has supposedly been kicked for flooding
+			-- Also, the variables must be re-initialized every time, because s-uzzbot swaps id and peer_id
+			local ham_msg = test_craft_message("!echo I'm ham!", false, 1234, "hamsender")
+			local spam_msg = test_craft_message("!echo I'm spam!", false, 4321, "spamsender")
+			
 			if not spam_kicked then test_receive_message(spam_msg, true) end
 			if not ham_kicked then test_receive_message(ham_msg) end -- Ask for acknowledgment
 		end
