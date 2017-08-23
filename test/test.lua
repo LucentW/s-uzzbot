@@ -63,6 +63,7 @@ end
 function test_load_plugins(plugins)
 	_G._config.enabled_plugins = plugins
 	local plugins_loaded_correctly = load_plugins()
+	assert.is_true(plugins_loaded_correctly)
 end
 
 describe("Bot", function()
@@ -85,7 +86,7 @@ describe("Bot", function()
 	end)
 	it("responds to pings", function()
 		_G.send_msg = spy.new(function(destination, text) end)
-		
+
 		test_load_plugins({"ping"})
 		test_receive_message("!ping")
 		assert.spy(_G.send_msg).was.called()
@@ -118,6 +119,25 @@ describe("Antiflood", function()
 		end
 		assert.is_true(kicked)
 		assert.are.equal(limit, num_replies)
-		--assert.spy(_G.send_msg).was.called(5)
+	end)
+	it("Doesn't block floods from root", function()
+		local num_replies = 0
+		local kicked = false
+		_G.send_msg = function(destination, text)
+			if text == "spam" then
+				num_replies = num_replies + 1
+			end
+		end
+		_G.chat_del_user = function(chat, user, cb)
+			kicked = true
+			cb(nil, true)
+		end
+		for i = 1, 100 do
+			-- Note that in this case we do ask for acknowledgement (doNotAcknowledge is false).
+			test_receive_message("!echo spam", true, false)
+			if kicked then break end
+		end
+		assert.is_false(kicked)
+		assert.are.equal(100, num_replies)
 	end)
 end)
