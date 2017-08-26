@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 THIS_DIR=$(cd $(dirname $0); pwd)
+LUA_DIR="$THIS_DIR/.lua"
 cd $THIS_DIR
 
 update() {
@@ -12,6 +13,32 @@ update() {
   install_rocks
 }
 
+install_lua() {
+  if [! -f $LUA_DIR]; then
+    mkdir $LUA_DIR
+  fi
+  curl -R -O http://www.lua.org/ftp/lua-5.3.4.tar.gz
+  tar zxf lua-5.3.4.tar.gz
+  cd lua-5.3.4
+  sed -i 's/CFLAGS= -O2/CFLAGS= -fPIC -O2/g' src/Makefile
+  sed -i "s:/usr/local:$LUA_DIR:g" Makefile
+  make linux
+  make install
+  cd ..
+  rm -rf lua-5.3.4*
+}
+
+install_php_lua() {
+  git clone https://github.com/giuseppem99/php-lua
+  cd php-lua
+  phpize
+  ./configure --with-lua=$LUA_DIR
+  make
+  cp modules/lua.so ..
+  cd ..
+  rm -rf php-lua
+}
+
 # Will install luarocks on THIS_DIR/.luarocks
 install_luarocks() {
   if [ ! -f .luarocks/bin/luarocks ]; then
@@ -21,7 +48,7 @@ install_luarocks() {
 
     PREFIX="$THIS_DIR/.luarocks"
 
-    ./configure --prefix=$PREFIX --sysconfdir=$PREFIX/luarocks --force-config
+    ./configure --prefix=$PREFIX --sysconfdir=$PREFIX/luarocks --with-lua=$LUA_DIR --force-config
 
     RET=$?; if [ $RET -ne 0 ];
       then echo "Error. Exiting."; exit $RET;
@@ -118,6 +145,8 @@ install() {
   git submodule update --init --recursive
   cd Madeline_lua_shim && composer update
   cd ..
+  install_lua
+  install_php_lua
   install_luarocks
   install_rocks
 }
@@ -165,6 +194,6 @@ else
     exit 1
   fi
 
-  php madeline.php
+  php -d extension='./lua.so' madeline.php
 
 fi
