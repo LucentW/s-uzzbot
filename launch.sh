@@ -48,11 +48,10 @@ install_rocks() {
     then echo "Error. Exiting."; exit $RET;
   fi
 
-  ./.luarocks/bin/luarocks install oauth
-  RET=$?; if [ $RET -ne 0 ];
-    then echo "Error. Exiting."; exit $RET;
-  fi
-
+  git clone https://github.com/ignacio/LuaOAuth oauth
+  cp -a oauth .luarocks/share/lua/5.3/
+  rm -rf oauth
+  
   ./.luarocks/bin/luarocks install redis-lua
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
