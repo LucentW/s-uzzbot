@@ -1,11 +1,13 @@
-package.path = package.path .. ';.luarocks/share/lua/5.2/?.lua'
-..';.luarocks/share/lua/5.2/?/init.lua'
-package.cpath = package.cpath .. ';.luarocks/lib/lua/5.2/?.so'
+local _VERSION_NUM = _VERSION:match('(%d%.%d)$')
+
+package.path = package.path .. ';.luarocks/share/lua/'.._VERSION_NUM..'/?.lua'
+..';.luarocks/share/lua/'.._VERSION_NUM..'/?/init.lua'
+package.cpath = package.cpath .. ';.luarocks/lib/lua/'.._VERSION_NUM..'/?.so'
 
 require("./bot/utils")
 require("./bot/emoji")
 
-VERSION = '0.2'
+VERSION = '0.3'
 
 -- This function is called when tg receive a msg
 function on_msg_receive (msg)
