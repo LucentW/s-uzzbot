@@ -589,6 +589,10 @@ function send_large_msg_callback(cb_extra, success, result)
   end
 
   local text_len
+  if type(text) == "number" then
+    text = tostring(text)
+  end
+  
   if type(text) ~= "boolean" then
     text_len = string.len(text) or 0
   else
