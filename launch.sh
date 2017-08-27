@@ -10,7 +10,6 @@ update() {
   cd Madeline_lua_shim
   composer update
   cd ..
-  install_rocks
 }
 
 install_lua() {
