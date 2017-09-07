@@ -13,7 +13,7 @@ update() {
 }
 
 install_lua() {
-  if [! -f $LUA_DIR]; then
+  if [ ! -f $LUA_DIR]; then
     mkdir $LUA_DIR
   fi
   curl -R -O http://www.lua.org/ftp/lua-5.3.4.tar.gz
