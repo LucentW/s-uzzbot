@@ -5,7 +5,7 @@ do
     local url = matches[1]
     local ext = matches[2]
 
-    local file = download_to_file(url)
+    local file = my_download_to_file(url)
     local cb_extra = {file_path=file}
 
     local mime_type = mimetype.get_content_type_no_sub(ext)
