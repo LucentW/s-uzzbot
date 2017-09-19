@@ -38,7 +38,7 @@ do
     else
       url, title, alt = get_xkcd(matches[1])
     end
-    file_path = download_to_file(url)
+    file_path = my_download_to_file(url)
     send_photo(receiver, file_path, send_title, {receiver, title, alt})
     return false
   end

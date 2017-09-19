@@ -2,58 +2,24 @@ local function kick_user(user_id, chat_id)
   local chat = 'chat#id'..chat_id
   local user = 'user#id'..user_id
   chat_del_user(chat, user, function (data, success, result)
-  if not success then
-    local text = str2emoji(":exclamation:")..' I can\'t kick '..data.user..' but should be kicked'
-    snoop_msg('I am unable to kick user '..user_id..' from group '..chat_id..'.')
-    send_msg(data.chat, text, ok_cb, nil)
-  end
-  end, {chat=chat, user=user})
-end
-
-local function kick_chan_user(user_id, chat_id)
-  local chat = 'channel#id'..chat_id
-  local user = 'user#id'..user_id
-  channel_kick(chat, user, function (data, success, result)
-  if not success then
-    local text = str2emoji(":exclamation:")..' I can\'t kick '..data.user..' but should be kicked'
-    snoop_msg('I am unable to kick user '..user_id..' from group '..chat_id..'.')
-    send_msg(data.chat, text, ok_cb, nil)
-  end
-  end, {chat=chat, user=user})
-end
-
-local function addexcept_reply(extra, success, result)
-  local hash = 'anti-flood:exception:'..result.to.peer_id..':'..result.from.peer_id
-  redis:set(hash, 1)
-  send_large_msg(extra, str2emoji(':information_source:')..' User ID '..result.from.peer_id..' is now exempt from antiflood checks.')
-end
-
-local function delexcept_reply(extra, success, result)
-  local hash = 'anti-flood:exception:'..result.to.peer_id..':'..result.from.peer_id
-  local reply
-  if redis:get(hash) then
-    redis:del(hash)
-    reply = str2emoji(':information_source:')..' User ID '..result.from.peer_id..' is now subject to antiflood checks.'
-  else
-    reply = str2emoji(':information_source:')..' User ID '..result.from.peer_id..' is not exempt from antiflood checks.'
-  end
-  send_large_msg(extra, reply)
-end
-
-local function run (msg, matches)
-  if not is_chat_msg(msg) then
-    return str2emoji(":exclamation:")..' Anti-flood works only on groups'
-  end
-  if not is_momod(msg) then
-    return str2emoji(":no_entry_sign:")..' You are not a moderator on this channel'
+      if not success then
+        local text = str2emoji(":exclamation:")..' I can\'t kick '..data.user..' but should be kicked'
+        snoop_msg('I am unable to kick user '..user_id..' from group '..chat_id..'.')
+        send_msg(data.chat, text, ok_cb, nil)
+      end
+      end, {chat=chat, user=user})
   end
 
-  local chat = msg.to.id
-  local hash = 'anti-flood:enabled:'..chat
-  if matches[1] == 'addexcept' then
-    if msg.reply_id then
-      get_message(msg.reply_id, addexcept_reply, get_receiver(msg))
-      return nil
+  local function kick_chan_user(user_id, chat_id)
+    local chat = 'channel#id'..chat_id
+    local user = 'user#id'..user_id
+    channel_kick(chat, user, function (data, success, result)
+        if not success then
+          local text = str2emoji(":exclamation:")..' I can\'t kick '..data.user..' but should be kicked'
+          snoop_msg('I am unable to kick user '..user_id..' from group '..chat_id..'.')
+          send_msg(data.chat, text, ok_cb, nil)
+        end
+        end, {chat=chat, user=user})
     end
   end
   if matches[1] == 'delexcept' then

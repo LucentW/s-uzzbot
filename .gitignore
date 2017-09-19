@@ -42,6 +42,11 @@ luac.out
 *.hex
 
 
+composer.lock
+*.madeline
+*.madeline.lock
+data/config.lua
+
 # =========================
 # Operating System Files
 # =========================

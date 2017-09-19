@@ -1,11 +1,13 @@
-package.path = package.path .. ';.luarocks/share/lua/5.2/?.lua'
-..';.luarocks/share/lua/5.2/?/init.lua'
-package.cpath = package.cpath .. ';.luarocks/lib/lua/5.2/?.so'
+local _VERSION_NUM = _VERSION:match('(%d%.%d)$')
+
+package.path = package.path .. ';.luarocks/share/lua/'.._VERSION_NUM..'/?.lua'
+..';.luarocks/share/lua/'.._VERSION_NUM..'/?/init.lua'
+package.cpath = package.cpath .. ';.luarocks/lib/lua/'.._VERSION_NUM..'/?.so'
 
 require("./bot/utils")
 require("./bot/emoji")
 
-VERSION = '0.2'
+VERSION = '0.3'
 
 -- Let's leave space for backwards-compatible new levels
 LOGLEVEL_DEBUG = 0
@@ -35,17 +37,15 @@ function on_msg_receive (msg)
 
   -- vardump(msg)
   msg = pre_process_service_msg(msg)
-  
-  if not msg_valid(msg) then
-    log(LOGLEVEL_DEBUG, "msg not valid")
-    return false
-  end
 
-  msg = pre_process_msg(msg)
-  if not msg then
-    log(LOGLEVEL_DEBUG, "preprocess failed")
-    return false
-  end
+  if msg_valid(msg) then
+    msg = pre_process_msg(msg)
+    if msg then
+      if not whitelistmod or (whitelistmod and is_momod(msg)) then
+        match_plugins(msg)
+      else
+        print('Message ignored -- '..chat_id..' has modonly wl enabled')
+      end
 
 -- Commented out since it is a cosmetic feature.
 -- Also breaks UX on groups since on standard mode it marks the message
