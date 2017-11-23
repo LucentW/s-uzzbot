@@ -36,7 +36,7 @@ local function send_generics_from_url_callback(cb_extra, success, result)
   -- Take the head and remove from urls table
   local head = table.remove(urls, 1)
 
-  local file_path = download_to_file(head, false)
+  local file_path = my_download_to_file(head, false)
   local cb_extra = {
     receiver = receiver,
     urls = urls,

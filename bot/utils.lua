@@ -13,7 +13,7 @@ JSON = (loadfile "./libs/dkjson.lua")()
 http.TIMEOUT = 10
 
 -- insert snoop group ID
-local LOG_ID = 0
+local LOG_ID = "chat#id0"
 
 function get_receiver(msg)
   if msg.to.type == 'user' then
@@ -47,6 +47,20 @@ function is_chan_msg( msg )
   return false
 end
 
+function user_print_name(user)
+  local text = ''
+  if user.first_name then
+    text = user.first_name..' '
+  end
+  if user.last_name then
+    text = text..user.last_name
+  end
+  if user.title then
+    text = user.title
+  end
+  return text or user.print_name:gsub('_', ' ')
+end
+
 function string.random(length)
   local str = "";
   for i = 1, length do
@@ -65,7 +79,7 @@ end
 
 -- DEPRECATED
 function string.trim(s)
-  print("string.trim(s) is DEPRECATED use string:trim() instead")
+  log(LOGLEVEL_WARN, "string.trim(s) is DEPRECATED use string:trim() instead")
   return s:gsub("^%s*(.-)%s*$", "%1")
 end
 
@@ -104,7 +118,7 @@ end
 -- Saves file to /tmp/. If file_name isn't provided,
 -- will get the text after the last "/" for filename
 -- and content-type for extension
-function download_to_file(url, file_name)
+function my_download_to_file(url, file_name)
   print("url to download: "..url)
 
   local respbody = {}
@@ -133,7 +147,7 @@ function download_to_file(url, file_name)
   file_name = file_name or get_http_file_name(url, headers)
 
   local file_path = "/tmp/"..file_name
-  print("Saved to: "..file_path)
+  log(LOGLEVEL_INFO, "Saved to: "..file_path)
 
   file = io.open(file_path, "w+")
   file:write(table.concat(respbody))
@@ -143,7 +157,7 @@ function download_to_file(url, file_name)
 end
 
 function vardump(value)
-  print(serpent.block(value, {comment=false}))
+  log(LOGLEVEL_INFO, serpent.block(value, {comment=false}))
 end
 
 -- taken from http://stackoverflow.com/a/11130774/3163199
@@ -166,104 +180,102 @@ end
 
 -- User has superuser privileges
 function is_sudo(msg)
-  local var = false
   -- Check users id in config
   for v,user in pairs(_config.sudo_users) do
     if user == msg.from.id then
-      var = true
+      return true
     end
   end
-  return var
+  return false
 end
 
 -- user has admins privileges
 function is_admin(msg)
-  local var = false
   local data = load_data(_config.moderation.data)
   local user = msg.from.id
   local admins = 'admins'
   if data[tostring(admins)] then
     if data[tostring(admins)][tostring(user)] then
-      var = true
+      return true
     end
   end
   for v,user in pairs(_config.sudo_users) do
     if user == msg.from.id then
-      var = true
+      return true
     end
   end
-  return var
+  return false
 end
 
 -- user has blocklist adding privileges
 function is_blocklistadm(msg)
-  local var = false
   local data = load_data(_config.moderation.data)
   local user = msg.from.id
   local blocklist = 'blocklist'
   if data[tostring(blocklist)] then
     if data[tostring(blocklist)][tostring(user)] then
-      var = true
+      return true
     end
   end
   for v,user in pairs(_config.sudo_users) do
     if user == msg.from.id then
-      var = true
+      return true
     end
   end
-  return var
+  return false
 end
 
 -- user has moderator privileges
 function is_momod(msg)
-  local var = false
   local data = load_data(_config.moderation.data)
   local user = msg.from.id
   if data[tostring(msg.to.id)] then
     if data[tostring(msg.to.id)]['moderators'] then
       if data[tostring(msg.to.id)]['moderators'][tostring(user)] then
-        var = true
+        return true
       end
     end
   end
   if data['admins'] then
     if data['admins'][tostring(user)] then
-      var = true
+      return true
     end
   end
   for v,user in pairs(_config.sudo_users) do
     if user == msg.from.id then
-      var = true
+      return true
     end
   end
-  return var
+  if user == our_id then
+    return true
+  end
+  return false
 end
 
 -- check whether user is mod, admin or sudo
 function is_mod(user_id, chat_id)
-  local var = false
   local data = load_data(_config.moderation.data)
   if data[tostring(chat_id)] then
     if data[tostring(chat_id)]['moderators'] then
       if data[tostring(chat_id)]['moderators'][tostring(user_id)] then
-        var = true
+        return true
       end
     end
   end
   if data['admins'] then
     if data['admins'][tostring(user_id)] then
-      var = true
+      return true
     end
   end
   for v,user in pairs(_config.sudo_users) do
     if user == user_id then
-      var = true
+      return true
     end
   end
-  if user == our_id then
-    var = true
+  if user_id == our_id then
+    return true
   end
-  return var
+  return false
 end
 
 -- Returns the name of the sender
@@ -328,7 +340,7 @@ end
 
 -- DEPRECATED!!!!!
 function string.starts(String, Start)
-  print("string.starts(String, Start) is DEPRECATED use string:starts(text) instead")
+  log(LOGLEVEL_INFO, "string.starts(String, Start) is DEPRECATED use string:starts(text) instead")
   return Start == string.sub(String,1,string.len(Start))
 end
 
@@ -346,7 +358,7 @@ function _send_photo(receiver, file_path, cb_function, cb_extra)
     cb_extra = cb_extra
   }
   -- Call to remove with optional callback
-  send_photo(receiver, file_path, cb_function, cb_extra)
+  send_photo(receiver, file_path, rmtmp_cb, cb_extra)
 end
 
 -- Download the image and send to receiver, it will be deleted.
@@ -355,14 +367,13 @@ function send_photo_from_url(receiver, url, cb_function, cb_extra)
   -- If callback not provided
   cb_function = cb_function or ok_cb
   cb_extra = cb_extra or false
-
-  local file_path = download_to_file(url, false)
-  if not file_path then -- Error
+  local inputMedia = {_ = "inputMediaPhotoExternal", url = url , caption = ""}
+  local res = fixfp(messages.sendMedia({peer = receiver, media = inputMedia}))
+  if not res or res == {} or res.error then -- Error
     local text = 'Error downloading the image'
     send_msg(receiver, text, cb_function, cb_extra)
   else
-    print("File path: "..file_path)
-    _send_photo(receiver, file_path, cb_function, cb_extra)
+    cb_function(cb_extra, true, res)
   end
 end
 
@@ -371,13 +382,10 @@ function send_photo_from_url_callback(cb_extra, success, result)
   local receiver = cb_extra.receiver
   local url = cb_extra.url
 
-  local file_path = download_to_file(url, false)
-  if not file_path then -- Error
+  local file_path = my_download_to_file(url, false)
+  if not res or res == {} or res.error then -- Error
     local text = 'Error downloading the image'
-    send_msg(receiver, text, ok_cb, false)
-  else
-    print("File path: "..file_path)
-    _send_photo(receiver, file_path, ok_cb, false)
+    send_msg(receiver, text, cb_function, cb_extra)
   end
 end
 
@@ -398,13 +406,6 @@ function send_photos_from_url_callback(cb_extra, success, result)
   -- cb_extra is a table containing receiver, urls and remove_path
   local receiver = cb_extra.receiver
   local urls = cb_extra.urls
-  local remove_path = cb_extra.remove_path
-
-  -- The previously image to remove
-  if remove_path ~= nil then
-    os.remove(remove_path)
-    print("Deleted: "..remove_path)
-  end
 
   -- Nil or empty, exit case (no more urls)
   if urls == nil or #urls == 0 then
@@ -414,15 +415,11 @@ function send_photos_from_url_callback(cb_extra, success, result)
   -- Take the head and remove from urls table
   local head = table.remove(urls, 1)
 
-  local file_path = download_to_file(head, false)
-  local cb_extra = {
-    receiver = receiver,
-    urls = urls,
-    remove_path = file_path
-  }
+  local inputMedia = {_ = "inputMediaPhotoExternal", url = head , caption = ""}
+  local res = fixfp(messages.sendMedia({peer = receiver, media = inputMedia}))
 
   -- Send first and postpone the others as callback
-  send_photo(receiver, file_path, send_photos_from_url_callback, cb_extra)
+  send_photos_from_url_callback(cb_extra, true, res)
 end
 
 -- Callback to remove a file
@@ -433,7 +430,7 @@ function rmtmp_cb(cb_extra, success, result)
 
   if file_path ~= nil then
     os.remove(file_path)
-    print("Deleted: "..file_path)
+    log(LOGLEVEL_INFO, "Deleted: "..file_path)
   end
   -- Finally call the callback
   cb_function(cb_extra, success, result)
@@ -454,9 +451,13 @@ end
 -- Download the image and send to receiver, it will be deleted.
 -- cb_function and cb_extra are optionals callback
 function send_document_from_url(receiver, url, cb_function, cb_extra)
-  local file_path = download_to_file(url, false)
-  print("File path: "..file_path)
-  _send_document(receiver, file_path, cb_function, cb_extra)
+  local inputMedia = {_ = "inputMediaDocumentExternal", url = url , caption = ""}
+  local res = fixfp(messages.sendMedia({peer = receiver, media = inputMedia}))
+  if not res or res == {} or res.error then
+    cb_function(cb_extra, false, res)
+  else
+    cb_function(cb_extra, true, res)
+  end
 end
 
 -- Parameters in ?a=1&b=2 style
@@ -522,7 +523,7 @@ function send_order_msg_callback(cb_extra, success, result)
   local file_path = cb_extra.file_path
   if file_path ~= nil then
     os.remove(file_path)
-    print("Deleted: " .. file_path)
+    log(LOGLEVEL_INFO, "Deleted: " .. file_path)
   end
   if type(msgs) == 'string' then
     send_large_msg(destination, msgs)
@@ -569,7 +570,7 @@ end
 -- Log to group
 function snoop_msg(text)
   local cb_extra = {
-    destination = "chat#id"..LOG_ID,
+    destination = LOG_ID,
     text = text
   }
   send_large_msg_callback(cb_extra, true)
@@ -588,6 +589,10 @@ function send_large_msg_callback(cb_extra, success, result)
   end
 
   local text_len
+  if type(text) == "number" then
+    text = tostring(text)
+  end
+  
   if type(text) ~= "boolean" then
     text_len = string.len(text) or 0
   else
@@ -616,18 +621,16 @@ end
 
 -- Returns a table with matches or nil
 function match_pattern(pattern, text, lower_case)
-  if text then
-    local matches = {}
-    if lower_case then
-      matches = { string.match(text:lower(), pattern) }
-    else
-      matches = { string.match(text, pattern) }
-    end
-    if next(matches) then
-      return matches
-    end
+  if not text then return nil end
+  local matches = {}
+  if lower_case then
+    matches = { string.match(text:lower(), pattern) }
+  else
+    matches = { string.match(text, pattern) }
   end
-  -- nil
+  if next(matches) then
+    return matches
+  end
 end
 
 -- Function to read data from files
@@ -638,9 +641,9 @@ function load_from_file(file, default_data)
     -- Create a new empty table
     default_data = default_data or {}
     serialize_to_file(default_data, file)
-    print ('Created file', file)
+    log(LOGLEVEL_INFO, 'Created file ' .. file)
   else
-    print ('Data loaded from file', file)
+    log(LOGLEVEL_INFO, 'Data loaded from file ' .. file)
     f:close()
   end
   return loadfile (file)()
@@ -681,6 +684,14 @@ function backward_msg_format (msg)
     user.id = user.peer_id
     user.peer_id = longid
     user.type = user.peer_type
+  end
+  if msg.action and msg.action.users then
+    for _, user in ipairs(msg.action.users) do
+      local longid = user.id
+      user.id = user.peer_id
+      user.peer_id = longid
+      user.type = user.peer_type
+    end
   end
   return msg
 end

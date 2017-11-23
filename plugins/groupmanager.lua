@@ -213,6 +213,20 @@ do
     return text
   end
 
+  local function ban_all(chat, users, is_chan, bots_only)
+    if is_chan then
+      for _, user in ipairs(users) do
+        if not bots_only or bots_only and is_bot(user) then
+          channel_kick(chat, "user#id" .. user.id, ok_cb, nil)
+        end
+      end
+    else
+      if not bots_only or bots_only and is_bot(user) then
+        chat_del_user(chat, "user#id" .. user.id, ok_cb, nil)
+      end
+    end
+  end
+
   function run(msg, matches)
     --vardump(msg)
     if matches[1] == 'creategroup' and matches[2] then
@@ -334,23 +348,27 @@ do
           if not is_chan_msg(msg) then
             chat = 'chat#id'..msg.to.id
             if group_member_lock == 'yes' then
-              chat_del_user(chat, user, ok_cb, true)
+              --chat_del_user(chat, user, ok_cb, true)
+              ban_all(chat, msg.action.users, false, false)
             end
             if group_bots_lock == 'yes' then
-              if is_bot(userobj) then
+              --[[if is_bot(userobj) then
                 chat_del_user(chat, user, ok_cb, true)
-              end
+              end--]]
+              ban_all(chat, msg.action.users, false, true)
             end
             return nil
           else
             chat = 'channel#id'..msg.to.id
             if group_member_lock == 'yes' then
-              channel_kick(chat, user, ok_cb, true)
+              --channel_kick(chat, user, ok_cb, true)
+              ban_all(chat, msg.action.users, true, false)
             end
             if group_bots_lock == 'yes' then
-              if is_bot(userobj) then
+              --[[if is_bot(userobj) then
                 channel_kick(chat, user, ok_cb, true)
-              end
+              end--]]
+              ban_all(chat, msg.action.users, true, true)
             end
             return nil
           end

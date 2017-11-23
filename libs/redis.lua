@@ -5,9 +5,14 @@ local params = {
   host = '127.0.0.1',
   port = 6379,
   db = 0
-  --- for multiple instances on the same machine 
-  --- change db = 0 with a number from 0 to 15
+  -- For multiple instances on the same machine 
+  -- change db = 0 with a number from 0 to 15.
+  -- Note that db #15 is used for tests.
 }
+
+if IS_TEST_ENVIRONMENT then
+  params.db = 15
+end
 
 -- Overwrite HGETALL
 Redis.commands.hgetall = Redis.command('hgetall', {
@@ -26,6 +31,11 @@ local ok = pcall(function()
 end)
 
 if not ok then
+  if IS_TEST_ENVIRONMENT then
+    print("Couldn't connect to Redis, can't run tests without it.")
+    os.exit()
+  end
+
   local fake_func = function()
     print('\27[31mCan\'t connect with Redis, install/configure it!\27[39m')
   end

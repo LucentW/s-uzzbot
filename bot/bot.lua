@@ -1,15 +1,29 @@
-package.path = package.path .. ';.luarocks/share/lua/5.2/?.lua'
-..';.luarocks/share/lua/5.2/?/init.lua'
-package.cpath = package.cpath .. ';.luarocks/lib/lua/5.2/?.so'
+local _VERSION_NUM = _VERSION:match('(%d%.%d)$')
+
+package.path = package.path .. ';.luarocks/share/lua/'.._VERSION_NUM..'/?.lua'
+..';.luarocks/share/lua/'.._VERSION_NUM..'/?/init.lua'
+package.cpath = package.cpath .. ';.luarocks/lib/lua/'.._VERSION_NUM..'/?.so'
 
 require("./bot/utils")
 require("./bot/emoji")
 
-VERSION = '0.2'
+VERSION = '0.3'
 
--- This function is called when tg receive a msg
+-- Let's leave space for backwards-compatible new levels
+LOGLEVEL_DEBUG = 0
+LOGLEVEL_INFO = 10
+LOGLEVEL_WARN = 20
+LOGLEVEL_ERROR = 30
+if (not loglevel) then loglevel = LOGLEVEL_INFO end
+function log(level, message)
+  if (level >= loglevel) then print(message) end
+end
+
+-- This function is called when tg receives a msg
+-- Returns false if the message was ignored, true otherwise
 function on_msg_receive (msg)
   if not started then
+    log(LOGLEVEL_DEBUG, "not started")
     return
   end
 
@@ -23,7 +37,7 @@ function on_msg_receive (msg)
 
   -- vardump(msg)
   msg = pre_process_service_msg(msg)
-  
+
   if msg_valid(msg) then
     msg = pre_process_msg(msg)
     if msg then
@@ -38,8 +52,13 @@ function on_msg_receive (msg)
 -- as read for everybody.
 --    mark_read(receiver, ok_cb, false)
 
-    end
+  if not (not whitelistmod or (whitelistmod and is_momod(msg))) then
+    log(LOGLEVEL_INFO, 'Message ignored -- '..chat_id..' has modonly wl enabled')
+    return false
   end
+
+  match_plugins(msg)
+  return true
 end
 
 function ok_cb(extra, success, result)
@@ -51,53 +70,56 @@ function on_binlog_replay_end()
 
   -- See plugins/isup.lua as an example for cron
 
-  _config = load_config()
+  -- You can optionally pass a pre-existing configuration. Used in tests.
+  if (not _config) then
+    _config = load_config()
+  end
 
   -- load plugins
   plugins = {}
-  load_plugins()
+  return load_plugins()
 end
 
 function msg_valid(msg)
   -- Don't process outgoing messages
   if msg.out then
-    print('\27[36mNot valid: msg from us\27[39m')
+    log(LOGLEVEL_INFO, '\27[36mNot valid: msg from us\27[39m')
     return false
   end
 
   -- Before bot was started
   if msg.date < now then
-    print('\27[36mNot valid: old msg\27[39m')
+    log(LOGLEVEL_INFO, '\27[36mNot valid: old msg\27[39m')
     return false
   end
 
   if msg.unread == 0 then
-    print('\27[36mNot valid: read\27[39m')
+    log(LOGLEVEL_INFO, '\27[36mNot valid: read\27[39m')
     return false
   end
 
   if not msg.to.id then
-    print('\27[36mNot valid: To id not provided\27[39m')
+    log(LOGLEVEL_INFO, '\27[36mNot valid: To id not provided\27[39m')
     return false
   end
 
   if not msg.from.id then
-    print('\27[36mNot valid: From id not provided\27[39m')
+    log(LOGLEVEL_INFO, '\27[36mNot valid: From id not provided\27[39m')
     return false
   end
 
   if msg.from.id == our_id then
-    print('\27[36mNot valid: Msg from our id\27[39m')
+    log(LOGLEVEL_INFO, '\27[36mNot valid: Msg from our id\27[39m')
     return false
   end
 
   if msg.to.type == 'encr_chat' then
-    print('\27[36mNot valid: Encrypted chat\27[39m')
+    log(LOGLEVEL_INFO, '\27[36mNot valid: Encrypted chat\27[39m')
     return false
   end
 
   if msg.from.id == 777000 then
-    print('\27[36mNot valid: Telegram message\27[39m')
+    log(LOGLEVEL_INFO, '\27[36mNot valid: Telegram message\27[39m')
     return false
   end
 
@@ -126,7 +148,7 @@ end
 function pre_process_msg(msg)
   for name,plugin in pairs(plugins) do
     if plugin.pre_process and msg then
-      print('Preprocess', name)
+      log(LOGLEVEL_INFO, 'Preprocess ' .. name)
       msg = plugin.pre_process(msg)
     end
   end
@@ -150,10 +172,10 @@ local function is_plugin_disabled_on_chat(plugin_name, receiver)
     for disabled_plugin,disabled in pairs(disabled_chats[receiver]) do
       if disabled_plugin == plugin_name and disabled then
         if plugins[disabled_plugin].hidden then
-          print('Plugin '..disabled_plugin..' is disabled on this chat')
+          log(LOGLEVEL_INFO, 'Plugin '..disabled_plugin..' is disabled on this chat')
         else
           local warning = 'Plugin '..disabled_plugin..' is disabled on this chat'
-          print(warning)
+          log(LOGLEVEL_INFO, warning)
           send_msg(receiver, warning, ok_cb, false)
         end
         return true
@@ -181,7 +203,7 @@ function match_plugin(plugin, plugin_name, msg)
   for k, pattern in pairs(plugin.patterns) do
     local matches = match_pattern(pattern, msg.text)
     if matches then
-      print("msg matches: ", pattern)
+      log(LOGLEVEL_INFO, "msg matches: " .. pattern)
 
       if not is_sudo(msg) then
         if is_plugin_disabled_on_chat(plugin_name, receiver) then
@@ -217,7 +239,7 @@ end
 -- Save the content of _config to config.lua
 function save_config( )
   serialize_to_file(_config, './data/config.lua')
-  print ('saved config into ./data/config.lua')
+  log(LOGLEVEL_INFO, 'saved config into ./data/config.lua')
 end
 
 -- Returns the config from config.lua file.
@@ -226,14 +248,14 @@ function load_config( )
   local f = io.open('./data/config.lua', "r")
   -- If config.lua doesn't exist
   if not f then
-    print ("Created new config file: data/config.lua")
+    log(LOGLEVEL_INFO, "Created new config file: data/config.lua")
     create_config()
   else
     f:close()
   end
   local config = loadfile ("./data/config.lua")()
   for v,user in pairs(config.sudo_users) do
-    print("Allowed user: " .. user)
+    log(LOGLEVEL_INFO, "Allowed user: " .. user)
   end
   return config
 end
@@ -290,8 +312,8 @@ function create_config( )
     moderation = {data = 'data/moderation.json'}
   }
   serialize_to_file(config, './data/config.lua')
-  print ('Saved clean configuration into ./data/config.lua')
-  print ('Make sure to edit sudo_users and add your ID.')
+  log(LOGLEVEL_INFO, 'Saved clean configuration into ./data/config.lua')
+  log(LOGLEVEL_INFO, 'Make sure to edit sudo_users and add your ID.')
 end
 
 function on_our_id (id)
@@ -318,21 +340,25 @@ function on_get_difference_end ()
 end
 
 -- Enable plugins in config.json
+-- Returns true if all the plugins were loaded correctly, false otherwise
 function load_plugins()
+  local success = true
   for k, v in pairs(_config.enabled_plugins) do
-    print("Loading plugin", v)
+    log(LOGLEVEL_INFO, "Loading plugin " .. v)
 
     local ok, err = pcall(function()
-        local t = loadfile("plugins/"..v..'.lua')()
+        local t = assert(loadfile("plugins/"..v..'.lua'))()
         plugins[v] = t
       end)
 
     if not ok then
-      print('\27[31mError loading plugin '..v..'\27[39m')
-      print('\27[31m'..err..'\27[39m')
+      success = false
+      log(LOGLEVEL_WARN, '\27[31mError loading plugin '..v..'\27[39m')
+      log(LOGLEVEL_WARN, '\27[31m'..err..'\27[39m')
     end
-
   end
+
+  return success
 end
 
 -- custom add
@@ -372,6 +398,7 @@ function cron_plugins()
   -- Called again in 5 mins
   postpone (cron_plugins, false, 5*60.0)
 end
+
 
 -- Start and load values
 our_id = 0

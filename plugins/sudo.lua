@@ -1,3 +1,7 @@
+local function reply(cb_extra, success, result)
+  send_large_msg(cb_extra, serpent.block(result, {comment=false}))
+end
+
 function run_sh(msg)
   name = get_name(msg)
   text = ''
@@ -81,12 +85,28 @@ function run(msg, matches)
     get_dialog_list(on_getting_dialogs, get_receiver(msg))
     return
   end
+
+  if matches[1] == "reload" then
+    if matches[2] == "config" then
+      _config = load_config()
+    elseif matches[2] == "bot" then
+      loadBot()
+      return "Bot reloaded"
+    end
+  end
+
+  if matches[1] == "debug" then
+    if msg.reply_id then
+       get_message(msg.reply_id, reply, receiver)
+    end
+    return serpent.block(msg, {comment = false})
+  end
 end
 
 return {
   description = "shows cpuinfo",
   usage = "!cpu",
   hide = true,
-  patterns = {"^!cpu", "^!sh","^Get dialogs$"},
+  patterns = {"^!cpu", "^!sh", "^Get dialogs$", "^!(reload) (config)$", "^!(reload) (bot)$", "^!(debug)$"},
   run = run
 }
