@@ -5,7 +5,7 @@ do
   
   -- Base search URL
   local BASE_URL = 'https://my-free-mp3.net/api/search.php?callback=placeholder'
-  local DL_URL = 'https://stream.my-free-mp3.net/'
+  local DL_URL = 'https://streams.my-free-mp3.net/'
   
   -- Provide encoded id for download link
   local function encodeForLink(input)
