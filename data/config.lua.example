@@ -10,7 +10,6 @@ do local _ = {
     "plugins",
     "stats",
     "time",
-    "version",
     "media_handler",
     "moderation",
     "sudo",
