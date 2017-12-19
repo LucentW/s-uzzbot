@@ -254,7 +254,6 @@ function create_config( )
       "plugins",
       "stats",
       "time",
-      "version",
       "media_handler",
       "moderation",
       "sudo",
