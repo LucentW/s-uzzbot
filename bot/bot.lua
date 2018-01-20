@@ -29,7 +29,7 @@ function on_msg_receive (msg)
     if msg then
       if not whitelistmod or (whitelistmod and is_momod(msg)) then
         match_plugins(msg)
-        if msg.text:match("^!version$") then
+        if (msg.text or ''):match("^!version$") then
           send_msg(get_receiver(msg), str2emoji(':information_source:')..' s-uzzbot/telegram-bot '.. VERSION .. [[
     This software and its plugins are under the GNU GPL v2 license.
     Sources are available at https://github.com/LucentW/s-uzzbot/]])
