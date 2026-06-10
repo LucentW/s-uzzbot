@@ -1,14 +1,10 @@
 do
 
-  local images_enabled = true;
-
-  local function get_sprite(path)
-    local url = "http://pokeapi.co/"..path
-    print(url)
-    local b,c = http.request(url)
-    local data = json:decode(b)
-    local image = data.image
-    return image
+  local function get_stat(stats, name)
+    for _, s in ipairs(stats) do
+      if s.stat.name == name then return s.base_stat end
+    end
+    return 0
   end
 
   local function callback(extra)
@@ -16,42 +12,33 @@ do
   end
 
   local function send_pokemon(query, receiver)
-    local url = "http://pokeapi.co/api/v1/pokemon/" .. query .. "/"
-    local b,c = http.request(url)
-    local pokemon = json:decode(b)
+    local url = "https://pokeapi.co/api/v2/pokemon/" .. query .. "/"
+    local b, c = https.request(url)
+    if c ~= 200 or not b then
+      return 'No pokémon found.'
+    end
 
+    local pokemon = json:decode(b)
     if pokemon == nil then
       return 'No pokémon found.'
     end
 
-    -- api returns height and weight x10
-    local height = tonumber(pokemon.height)/10
-    local weight = tonumber(pokemon.weight)/10
+    -- height in decimetres, weight in hectograms
+    local height = tonumber(pokemon.height) / 10
+    local weight = tonumber(pokemon.weight) / 10
 
-    local text = 'Pokédex ID: ' .. pokemon.pkdx_id
+    local text = 'Pokédex ID: ' .. pokemon.id
     ..'\nName: ' .. pokemon.name
-    ..'\nWeight: ' .. weight.." kg"
-    ..'\nHeight: ' .. height.." m"
-    ..'\nSpeed: ' .. pokemon.speed
+    ..'\nWeight: ' .. weight .. ' kg'
+    ..'\nHeight: ' .. height .. ' m'
+    ..'\nSpeed: ' .. get_stat(pokemon.stats, 'speed')
 
-    local image = nil
-
-    if images_enabled and pokemon.sprites and pokemon.sprites[1] then
-      local sprite = pokemon.sprites[1].resource_uri
-      image = get_sprite(sprite)
+    if pokemon.sprites and pokemon.sprites.front_default then
+      local extra = { receiver = receiver, text = text }
+      send_photo_from_url(receiver, pokemon.sprites.front_default, callback, extra)
     end
 
-    if image then
-      image = "http://pokeapi.co"..image
-      local extra = {
-        receiver = receiver,
-        text = text
-      }
-      send_photo_from_url(receiver, image, callback, extra)
-      return text
-    else
-      return text
-    end
+    return text
   end
 
   local function run(msg, matches)
