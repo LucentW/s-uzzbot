@@ -1,4 +1,11 @@
-local helpers = require "OAuth.helpers"
+local function url_encode_arguments(args)
+  local t = {}
+  for k, v in pairs(args) do
+    t[#t+1] = URL.escape(tostring(k)) .. "=" .. URL.escape(tostring(v))
+  end
+  return table.concat(t, "&")
+end
+local helpers = { url_encode_arguments = url_encode_arguments }
 
 local base = 'https://screenshotmachine.com/'
 local url = base .. 'processor.php'
