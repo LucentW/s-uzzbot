@@ -1,6 +1,7 @@
 do
 
   local function check_member(cb_extra, success, result)
+    if not success then return end
     local receiver = cb_extra.receiver
     local data = cb_extra.data
     local msg = cb_extra.msg
@@ -220,6 +221,10 @@ do
   local function syncmods(cb_extra, success, result)
     local receiver = cb_extra
 
+    if not success then
+      return send_large_msg(receiver, 'Failed to get admin list.')
+    end
+
     local data = load_data(_config.moderation.data)
     local group = string.gsub(receiver, 'chat#id', '')
     group = string.gsub(group, 'channel#id', '')
@@ -276,6 +281,10 @@ do
     local receiver = cb_extra.receiver
     local member = cb_extra.member
     local text = 'No user @'..member..' in this group.'
+
+    if not success then
+      return send_large_msg(receiver, text)
+    end
 
     local members
     if not cb_extra.is_chan then
