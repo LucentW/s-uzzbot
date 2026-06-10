@@ -1,18 +1,26 @@
 do
 
+  local FEED_URL = "https://9gag.com/hot.rss"
+
   local function get_9GAG()
-    local url = "http://api-9gag.herokuapp.com/"
-    local b,c = http.request(url)
-    if c ~= 200 then return nil end
-    local gag = json:decode(b)
-    -- random max json table size
-    local i = math.random(#gag)
-    local link_image = gag[i].src
-    local title = gag[i].title
-    if link_image:sub(0,2) == '//' then
-      link_image = msg.text:sub(3,-1)
+    local b, c = https.request(FEED_URL)
+    if c ~= 200 or not b then return nil, nil end
+
+    local items = {}
+    for item in b:gmatch("<item>(.-)</item>") do
+      local title = item:match("<title><!%[CDATA%[(.-)%]%]></title>")
+                 or item:match("<title>(.-)</title>")
+      local img   = item:match('src="(https://[^"]+%.jpg)"')
+                 or item:match('src="(https://[^"]+%.gif)"')
+                 or item:match('src="(https://[^"]+%.png)"')
+      if img then
+        table.insert(items, {img = img, title = title or ""})
+      end
     end
-    return link_image, title
+
+    if #items == 0 then return nil, nil end
+    local pick = items[math.random(#items)]
+    return pick.img, pick.title
   end
 
   local function send_title(cb_extra, success, result)
@@ -24,6 +32,9 @@ do
   local function run(msg, matches)
     local receiver = get_receiver(msg)
     local url, title = get_9GAG()
+    if not url then
+      return "Could not fetch from 9GAG."
+    end
     send_photo_from_url(receiver, url, send_title, {receiver, title})
     return false
   end
