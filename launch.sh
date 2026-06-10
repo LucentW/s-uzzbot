@@ -73,10 +73,10 @@ install_rocks() {
     then echo "Error. Exiting."; exit $RET;
   fi
 
-  ./.luarocks/bin/luarocks install xml
-  RET=$?; if [ $RET -ne 0 ];
-    then echo "Error. Exiting."; exit $RET;
-  fi
+  # ./.luarocks/bin/luarocks install xml
+  # RET=$?; if [ $RET -ne 0 ];
+  #   then echo "Error. Exiting."; exit $RET;
+  # fi
 
   ./.luarocks/bin/luarocks install feedparser
   RET=$?; if [ $RET -ne 0 ];

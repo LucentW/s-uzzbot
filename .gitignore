@@ -8,6 +8,9 @@ luac.out
 # luarocks
 .luarocks
 
+# s-uzzbot config files
+data/*.lua
+
 # Object files
 *.o
 *.os

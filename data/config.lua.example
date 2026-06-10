@@ -20,7 +20,6 @@ do local _ = {
     "imdb",
     "boobs",
     "banhammer",
-    "meme",
     "weather",
     "pokedex",
     "rss",
@@ -38,7 +37,6 @@ do local _ = {
     "anti-flood",
     "expand",
     "tex",
-    "webshot",
     "translate",
     "mute"
   },
