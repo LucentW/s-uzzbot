@@ -11,13 +11,13 @@ update() {
 
 # Will install luarocks on THIS_DIR/.luarocks
 install_luarocks() {
-  git clone https://github.com/keplerproject/luarocks.git
+  git clone https://github.com/luarocks/luarocks.git
   cd luarocks
-  git checkout tags/v2.2.1 # Current stable
+  git checkout tags/v3.13.0
 
   PREFIX="$THIS_DIR/.luarocks"
 
-  ./configure --prefix=$PREFIX --sysconfdir=$PREFIX/luarocks --force-config
+  ./configure --prefix=$PREFIX --sysconfdir=$PREFIX/luarocks --lua-version=5.3 --force-config
 
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
@@ -38,7 +38,7 @@ install_rocks() {
     then echo "Error. Exiting."; exit $RET;
   fi
 
-  ./.luarocks/bin/luarocks install oauth
+  ./.luarocks/bin/luarocks install luasec
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
   fi
@@ -58,10 +58,25 @@ install_rocks() {
     then echo "Error. Exiting."; exit $RET;
   fi
 
-  ./.luarocks/bin/luarocks install xml
+  ./.luarocks/bin/luarocks install luafilesystem
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
   fi
+
+  ./.luarocks/bin/luarocks install lub
+  RET=$?; if [ $RET -ne 0 ];
+    then echo "Error. Exiting."; exit $RET;
+  fi
+
+  ./.luarocks/bin/luarocks install luaexpat
+  RET=$?; if [ $RET -ne 0 ];
+    then echo "Error. Exiting."; exit $RET;
+  fi
+
+  # ./.luarocks/bin/luarocks install xml
+  # RET=$?; if [ $RET -ne 0 ];
+  #   then echo "Error. Exiting."; exit $RET;
+  # fi
 
   ./.luarocks/bin/luarocks install feedparser
   RET=$?; if [ $RET -ne 0 ];
@@ -69,6 +84,21 @@ install_rocks() {
   fi
 
   ./.luarocks/bin/luarocks install serpent
+  RET=$?; if [ $RET -ne 0 ];
+    then echo "Error. Exiting."; exit $RET;
+  fi
+
+  ./.luarocks/bin/luarocks install lunitx
+  RET=$?; if [ $RET -ne 0 ];
+    then echo "Error. Exiting."; exit $RET;
+  fi
+
+  ./.luarocks/bin/luarocks install set
+  RET=$?; if [ $RET -ne 0 ];
+    then echo "Error. Exiting."; exit $RET;
+  fi
+
+  ./.luarocks/bin/luarocks install htmlparser 0.3.2-1
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
   fi
