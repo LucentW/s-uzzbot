@@ -9,18 +9,50 @@ local SPAM_PATTERNS = {
 }
 
 local function is_spam(text)
-  local isit = false
-  if text ~= nil then
-    for k, v in ipairs(SPAM_PATTERNS) do
-      isit = isit or (text:match(v) ~= nil)
-    end
+  if text == nil then return false end
+  for _, v in ipairs(SPAM_PATTERNS) do
+    if text:match(v) ~= nil then return true end
   end
-  return isit
+  return false
+end
+
+local function get_linked_chat_id(msg)
+  if msg.to and msg.to.linked_chat then
+    return msg.to.linked_chat.peer_id
+  end
+  return nil
 end
 
 local function is_chan_fwd(msg)
-  if msg.fwd_from ~= nil then
-    return msg.fwd_from.peer_type == "channel"
+  if msg.fwd_from == nil or msg.fwd_from.peer_type ~= "channel" then
+    return false
+  end
+  local linked = get_linked_chat_id(msg)
+  if linked and msg.fwd_from.peer_id == linked then
+    return false  -- forward from the group's own linked channel is OK
+  end
+  return true
+end
+
+local function is_chan_quote(msg)
+  if msg.reply_to_peer == nil or msg.reply_to_peer.peer_type ~= "channel" then
+    return false
+  end
+  local linked = get_linked_chat_id(msg)
+  if linked and msg.reply_to_peer.peer_id == linked then
+    return false  -- quote from the linked channel is OK
+  end
+  return true
+end
+
+local function has_spam_buttons(msg)
+  if msg.reply_markup == nil then return false end
+  for _, row in ipairs(msg.reply_markup) do
+    for _, btn in ipairs(row) do
+      if btn.type == "url" and is_spam(btn.url) then
+        return true
+      end
+    end
   end
   return false
 end
@@ -153,23 +185,24 @@ local function kick_user(user_id, chat_id)
           end
         end
 
-        local is_rly_spam = is_spam(real_text)
+        local spam_reason = nil
+        if is_spam(real_text)       then spam_reason = 'spam text' end
+        if has_spam_buttons(msg)    then spam_reason = (spam_reason and spam_reason..'+' or '') .. 'spam button url' end
 
         local hash_enable_fwd = hash_enable..':fwd'
         local enabled_fwd = redis:get(hash_enable_fwd)
         if enabled_fwd then
-          is_rly_spam = is_rly_spam or is_chan_fwd(msg)
+          if is_chan_fwd(msg)   then spam_reason = (spam_reason and spam_reason..'+' or '') .. 'channel fwd' end
+          if is_chan_quote(msg) then spam_reason = (spam_reason and spam_reason..'+' or '') .. 'channel quote' end
         end
 
-        if msg.from.type == 'user' and is_rly_spam then
+        if msg.from.type == 'user' and spam_reason ~= nil then
           local receiver = get_receiver(msg)
           local user = msg.from.id
-          local text = str2emoji(":exclamation:")..' User '
-          if msg.from.username ~= nil then
-            text = text..' @'..msg.from.username..' ['..user..'] is spamming'
-          else
-            text = text..string.gsub(msg.from.print_name, '_', ' ')..' ['..user..'] is spamming'
-          end
+          local display = msg.from.username ~= nil
+            and ('@'..msg.from.username..' ['..user..']')
+            or (string.gsub(msg.from.print_name, '_', ' ')..' ['..user..']')
+          local text = str2emoji(":exclamation:")..' User '..display..' is spamming ('..spam_reason..')'
           local chat = msg.to.id
           local hash_exception = 'anti-spam:exception:'..msg.to.id..':'..msg.from.id
 
@@ -183,11 +216,7 @@ local function kick_user(user_id, chat_id)
             print('User is exempt from antispam checks!')
           else
             send_msg(receiver, text, ok_cb, nil)
-            if msg.from.username ~= nil then
-              snoop_msg('User @'..msg.from.username..' ['..msg.from.id..'] has been found spamming.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..real_text)
-            else
-              snoop_msg('User '..string.gsub(msg.from.print_name, '_', ' ')..' ['..msg.from.id..'] has been found spamming.\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..real_text)
-            end
+            snoop_msg('User '..display..' has been found spamming ('..spam_reason..').\nGroup: '..msg.to.print_name..' ['..msg.to.id..']\nText: '..real_text)
             if not is_chan_msg(msg) then
               kick_user(user, chat)
             else
