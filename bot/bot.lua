@@ -327,8 +327,9 @@ function load_plugins()
     print("Loading plugin", v)
 
     local ok, err = pcall(function()
-        local t = loadfile("plugins/"..v..'.lua')()
-        plugins[v] = t
+        local fn, lerr = loadfile("plugins/"..v..'.lua')
+        if not fn then error('Plugin file not found: plugins/'..v..'.lua'..(lerr and ' ('..lerr..')' or '')) end
+        plugins[v] = fn()
       end)
 
     if not ok then
