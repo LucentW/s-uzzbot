@@ -130,48 +130,43 @@ function Wikipedia:wikisearch(text, lang)
 end
 
 local function run(msg, matches)
-  -- TODO: Remember language (i18 on future version)
-  -- TODO: Support for non Wikipedias but Mediawikis
-  local search, term, lang
-  if matches[1] == "search" then
-    search = true
-    term = matches[2]
-    lang = nil
-  elseif matches[2] == "search" then
-    search = true
-    term = matches[3]
-    lang = matches[1]
-  else
-    term = matches[2]
-    lang = matches[1]
-  end
-  if not term then
-    term = lang
-    lang = nil
-  end
-  if term == "" then
-    local text = "Usage:\n"
-    text = text..table.concat(wikiusage, '\n')
-    return text
+  local rest = matches[1]
+
+  -- strip optional language code (letters only, e.g. "it", "fr")
+  local lang = rest:match("^(%a+)")
+  if lang then
+    rest = rest:sub(#lang + 1)
   end
 
-  local result
-  if search then
-    result = Wikipedia:wikisearch(term, lang)
+  -- strip leading space
+  rest = rest:gsub("^%s+", "")
+
+  -- check for "search" keyword
+  local search, term
+  local search_term = rest:match("^[Ss]earch%s+(.+)$")
+  if search_term then
+    search = true
+    term = search_term
   else
-    result = Wikipedia:wikintro(term, lang)
+    term = rest ~= "" and rest or nil
   end
-  return result
+
+  if not term then
+    return "Usage:\n" .. table.concat(wikiusage, '\n')
+  end
+
+  if search then
+    return Wikipedia:wikisearch(term, lang)
+  else
+    return Wikipedia:wikintro(term, lang)
+  end
 end
 
 return {
   description = "Searches Wikipedia and send results",
   usage = wikiusage,
   patterns = {
-    "^![Ww]iki(%w+) (search) (.+)$",
-    "^![Ww]iki (search) ?(.*)$",
-    "^![Ww]iki(%w+) (.+)$",
-    "^![Ww]iki ?(.*)$"
+    "^![Ww]iki(.*)$"
   },
   run = run
 }
