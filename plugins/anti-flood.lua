@@ -125,7 +125,8 @@ local function kick_user(user_id, chat_id)
     end
 
     local function pre_process (msg)
-      -- Ignore service msg
+      -- Ignore edited and service messages
+      if msg.edited then return msg end
       if msg.service then
         print('Service message')
         return msg
