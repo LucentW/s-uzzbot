@@ -298,6 +298,44 @@ function create_config( )
   print ('Make sure to edit sudo_users and add your ID.')
 end
 
+-- Build a receiver string from a peer table (as received in on_msg_reactions)
+local function reaction_receiver(peer)
+  local t = peer.peer_type
+  local id = peer.peer_id
+  if t == 'user'    then return 'user#id'    .. id end
+  if t == 'chat'    then return 'chat#id'    .. id end
+  if t == 'channel' then return 'channel#id' .. id end
+end
+
+-- Dispatch reaction events to plugins that declare a `reactions` table
+local function match_reaction_plugins(peer, msg_id, reactions)
+  local receiver = reaction_receiver(peer)
+  for name, plugin in pairs(plugins) do
+    if plugin.reactions and plugin.on_reaction then
+      for _, r in ipairs(reactions) do
+        if r.type == 'emoji' and r.emoji then
+          for _, trigger in ipairs(plugin.reactions) do
+            if r.emoji == trigger then
+              if not is_plugin_disabled_on_chat(name, receiver) then
+                local ok, err = pcall(plugin.on_reaction, peer, msg_id, r.emoji, reactions)
+                if not ok then
+                  print('\27[31mReaction plugin error ['..name..']: '..tostring(err)..'\27[39m')
+                end
+              end
+              break
+            end
+          end
+        end
+      end
+    end
+  end
+end
+
+function on_msg_reactions(peer, msg_id, reactions)
+  if not started then return end
+  match_reaction_plugins(peer, msg_id, reactions)
+end
+
 function on_our_id (id)
   our_id = id
 end
